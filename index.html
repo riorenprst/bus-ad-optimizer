@@ -20,91 +20,95 @@
 body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);color:var(--ink);
   line-height:1.5;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
-
-/* header */
 header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);
   backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
 .head-in{display:flex;align-items:center;gap:12px;height:60px}
-.logo{font-weight:800;font-size:18px;letter-spacing:-.4px}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.4px;white-space:nowrap}
 .logo b{color:var(--accent)}
 .badge{font-size:11px;font-weight:700;color:var(--accent);background:var(--accent-soft);
-  padding:3px 8px;border-radius:999px}
-nav{margin-left:auto;display:flex;gap:4px;overflow-x:auto}
+  padding:3px 8px;border-radius:999px;white-space:nowrap}
+nav{margin-left:auto;display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
 nav button{font-family:inherit;font-size:13px;font-weight:600;color:var(--sub);background:none;
-  border:none;padding:8px 12px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:.15s}
+  border:none;padding:8px 11px;border-radius:9px;cursor:pointer;white-space:nowrap;transition:.15s}
 nav button:hover{color:var(--ink);background:var(--bg)}
 nav button.on{color:var(--accent);background:var(--accent-soft)}
-
-/* hero */
 .hero{padding:56px 0 28px;text-align:center}
 .hero h1{font-family:'Jua',sans-serif;font-size:40px;font-weight:400;letter-spacing:-.5px;line-height:1.25}
 .hero h1 span{color:var(--accent)}
 .hero p{color:var(--sub);margin-top:14px;font-size:16px}
 .hero .meta{margin-top:10px;font-size:12px;color:var(--sub);opacity:.8}
-
-/* kpi */
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:8px 0 40px}
 .kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
 .kpi .v{font-size:28px;font-weight:800;letter-spacing:-1px}
 .kpi .v small{font-size:14px;font-weight:700;color:var(--sub);margin-left:2px}
 .kpi .l{font-size:12.5px;color:var(--sub);margin-top:6px}
-
-/* sections */
 .section{display:none;padding-bottom:64px}
 .section.on{display:block;animation:fade .3s ease}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .s-head{margin:32px 0 18px}
 .s-head h2{font-size:24px;font-weight:800;letter-spacing:-.6px}
 .s-head p{color:var(--sub);margin-top:6px;font-size:14px}
-
-/* cards / tables */
+.s-sub{font-size:15px;font-weight:700;margin:26px 0 12px;color:var(--ink)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
 .card + .card{margin-top:16px}
+.scroll{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
-th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line)}
+th,td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);white-space:nowrap}
 th{font-size:12px;color:var(--sub);font-weight:600;background:#fafbfc}
 tr:last-child td{border-bottom:none}
 td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+td.wrap-c{white-space:normal}
 .rank{display:inline-flex;width:24px;height:24px;align-items:center;justify-content:center;
   border-radius:8px;font-weight:800;font-size:12px;background:var(--bg);color:var(--sub)}
 .rank.top{background:var(--accent);color:#fff}
 .bar{height:6px;border-radius:4px;background:var(--accent);display:inline-block;vertical-align:middle}
-.barbg{display:inline-block;width:70px;height:6px;border-radius:4px;background:var(--line);vertical-align:middle;margin-right:8px}
+.barbg{display:inline-block;width:60px;height:6px;border-radius:4px;background:var(--line);vertical-align:middle;margin-right:8px}
 .tag{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:6px;
   background:var(--accent-soft);color:var(--accent);margin:1px 2px}
 .tag.gray{background:var(--bg);color:var(--sub)}
 .pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px}
 .pill.bus{background:#eef6ff;color:#1f6feb}.pill.subway{background:#fdeef6;color:#d6336c}
 .reason{color:var(--sub);font-size:12.5px}
-
-/* quadrant scatter */
-.scatter{position:relative;height:440px;margin:8px 16px 16px;background:
-  linear-gradient(#fff,#fff) padding-box}
+.scatter{position:relative;height:440px;margin:8px 16px 16px}
 .scatter .axis-x,.scatter .axis-y{position:absolute;color:var(--sub);font-size:11px}
 .scatter .ql{position:absolute;font-size:11px;font-weight:700;opacity:.5}
 .q-line{position:absolute;background:var(--line)}
-.dot{position:absolute;border-radius:50%;transform:translate(-50%,50%);cursor:pointer;
-  border:2px solid #fff;transition:.15s}
+.dot{position:absolute;border-radius:50%;transform:translate(-50%,50%);cursor:pointer;border:2px solid #fff;transition:.15s}
 .dot:hover{transform:translate(-50%,50%) scale(1.35);z-index:5}
 .dot-label{position:absolute;font-size:10px;color:var(--sub);transform:translate(-50%,50%);pointer-events:none;white-space:nowrap}
 .legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 16px;font-size:12px;color:var(--sub)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
-
-#map{height:420px;border-radius:14px;margin:0}
+#map{height:420px;border-radius:14px}
 .maplab{font-size:11px;color:var(--sub);padding:10px 16px 0}
-
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}
-  .hero h1{font-size:30px}.hide-sm{display:none}}
+.seg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px 16px}
+.seg-col h4{font-size:12px;color:var(--sub);font-weight:700;margin-bottom:8px}
+.seg-item{font-size:12.5px;padding:6px 0;border-bottom:1px dashed var(--line);display:flex;gap:6px}
+.seg-item:last-child{border:none}
+.seg-item b{color:var(--accent);min-width:14px}
+.seg-title{padding:14px 16px 0;font-weight:700;font-size:14px}
+.grade-wrap{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2,.grade-wrap{grid-template-columns:1fr}
+  .seg-grid{grid-template-columns:1fr}.hero h1{font-size:30px}}
+.grade-card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px}
+.gtag{display:inline-block;font-weight:800;font-size:13px;padding:3px 11px;border-radius:8px;color:#fff;margin-bottom:10px}
+.gA{background:var(--accent)}.gB{background:var(--good)}.gC{background:var(--warn)}
+.grade-card li{list-style:none;font-size:13px;margin:9px 0;padding-left:0}
+.grade-card li b{display:block;margin-bottom:2px}
+.grade-card li span{color:var(--sub);font-size:11.5px}
 .cov{display:flex;align-items:center;gap:8px}
-.cov i{width:9px;height:9px;border-radius:50%}
-.cov i.y{background:var(--good)}.cov i.n{background:var(--bad)}
+.cov i{width:9px;height:9px;border-radius:50%}.cov i.y{background:var(--good)}.cov i.n{background:var(--bad)}
+.note{background:var(--accent-soft);border-radius:14px;padding:16px 18px;font-size:13.5px;color:#2a3a7a;margin-top:16px}
+.note b{color:var(--accent)}
+ol.actions{margin:6px 0 0 0;padding-left:20px;font-size:13.5px}
+ol.actions li{margin:8px 0}
 footer{border-top:1px solid var(--line);padding:28px 0;color:var(--sub);font-size:12px;text-align:center}
 .tip{position:fixed;pointer-events:none;background:#15151f;color:#fff;padding:8px 11px;border-radius:9px;
   font-size:12px;z-index:99;opacity:0;transition:opacity .12s;max-width:220px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
 .tip b{color:#9db4ff}
-.note{background:var(--accent-soft);border-radius:14px;padding:16px 18px;font-size:13.5px;color:#2a3a7a;margin-top:16px}
-.note b{color:var(--accent)}
+.mini-bars{display:flex;gap:3px;align-items:flex-end;height:22px}
+.mini-bars i{width:7px;background:var(--accent);border-radius:2px;opacity:.85}
 </style>
 </head>
 <body>
@@ -117,7 +121,9 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--sub);font-siz
     <button data-s="regions">지역 TOP</button>
     <button data-s="routes">노선</button>
     <button data-s="fni">금융니즈</button>
+    <button data-s="segments">세그먼트</button>
     <button data-s="coverage">커버리지</button>
+    <button data-s="strategy">전략</button>
   </nav>
 </div></header>
 
@@ -133,52 +139,54 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--sub);font-siz
   <div class="kpis" id="kpis"></div>
   <div class="note">
     <b>읽는 법.</b> 단순히 점포가 많은 상권이 아니라, 개·폐업과 영업기간이 빠르게 <b>변하는 상권</b>(금융니즈 강도, FNI)을 함께 봅니다.
-    추천 믹스는 22개 타겟 상권을 최대로 커버하면서 예산 효율(점수/비용)이 높은 노선부터 그리디로 채운 결과입니다.
+    추천 믹스는 22개 타겟 상권을 최대로 커버하면서 예산 효율(점수/비용)이 높은 노선부터 채운 결과입니다.
   </div>
   <div class="s-head"><h2>추천 미디어 믹스 요약</h2><p>예산 내 최대 상권 커버 · 점수/비용 효율 기준</p></div>
-  <div class="card"><table><thead><tr>
-    <th>매체</th><th>노선/호선</th><th class="r">광고효율</th><th class="r hide-sm">월 비용</th><th class="r">월 추정도달</th></tr></thead>
+  <div class="card scroll"><table><thead><tr>
+    <th>매체</th><th>노선/호선</th><th class="r">광고효율</th><th class="r">월 비용</th><th class="r">월 추정도달</th></tr></thead>
     <tbody id="mixMini"></tbody></table></div>
 </section>
 
 <!-- MIX -->
 <section class="section" id="mix">
   <div class="s-head"><h2>추천 광고 믹스</h2><p id="mixDesc"></p></div>
-  <div class="card"><table><thead><tr>
-    <th>#</th><th>매체</th><th>노선/호선</th><th class="r">효율점수</th><th class="r hide-sm">월 비용</th>
-    <th class="r">월 추정도달</th><th class="hide-sm">신규 커버 상권</th></tr></thead>
+  <div class="card scroll"><table><thead><tr>
+    <th>#</th><th>매체</th><th>노선/호선</th><th class="r">효율점수</th><th class="r">월 비용</th>
+    <th class="r">월 추정도달</th><th>신규 커버 상권</th></tr></thead>
     <tbody id="mixFull"></tbody></table></div>
 </section>
 
 <!-- REGIONS -->
 <section class="section" id="regions">
-  <div class="s-head"><h2>지역 TOP 10</h2><p>점포 밀집 · 자영업 비중 · 유동인구 · 버스 접근성 · 금융니즈 종합 100점</p></div>
-  <div class="card"><table><thead><tr>
-    <th>#</th><th>지역</th><th class="r">종합점수</th><th class="r hide-sm">버스노선</th><th>추천 이유</th></tr></thead>
+  <div class="s-head"><h2>지역 TOP 10</h2><p>점포 밀집 · 자영업 비중 · 유동인구 · 버스 접근성 · 금융니즈 5개 항목 종합 100점</p></div>
+  <div class="card scroll"><table><thead><tr>
+    <th>#</th><th>지역</th><th class="r">종합</th><th class="r">점포</th><th class="r">자영업</th>
+    <th class="r">유동인구</th><th class="r">버스접근</th><th class="r">금융니즈</th><th class="r">노선</th></tr></thead>
     <tbody id="regionTbl"></tbody></table></div>
+  <div class="s-sub">실시간 인구 프로파일 (서울 실시간 도시데이터)</div>
+  <div class="card scroll"><table><thead><tr>
+    <th>지역</th><th>혼잡도</th><th class="r">실시간 인구</th><th class="r">상주비율</th>
+    <th class="r">개인/법인</th><th class="r">3050 비중</th><th class="r">외식업종 비중</th></tr></thead>
+    <tbody id="rtTbl"></tbody></table></div>
 </section>
 
 <!-- ROUTES -->
 <section class="section" id="routes">
   <div class="s-head"><h2>노선 분석</h2><p>버스 TOP 10 · 지하철 호선별 광고 효율</p></div>
   <div class="grid2">
-    <div class="card">
-      <table><thead><tr><th colspan="4">🚌 버스 노선 TOP 10</th></tr>
+    <div class="card scroll"><table><thead><tr><th colspan="4">🚌 버스 노선 TOP 10</th></tr>
       <tr><th>#</th><th>노선</th><th class="r">점수</th><th>경유 상권</th></tr></thead>
-      <tbody id="busTbl"></tbody></table>
-    </div>
-    <div class="card">
-      <table><thead><tr><th colspan="4">🚇 지하철 호선 (효율순)</th></tr>
+      <tbody id="busTbl"></tbody></table></div>
+    <div class="card scroll"><table><thead><tr><th colspan="4">🚇 지하철 호선 (효율순)</th></tr>
       <tr><th>호선</th><th class="r">대중노출</th><th class="r">사장님타겟</th><th class="r">FNI</th></tr></thead>
-      <tbody id="subTbl"></tbody></table>
-    </div>
+      <tbody id="subTbl"></tbody></table></div>
   </div>
 </section>
 
 <!-- FNI -->
 <section class="section" id="fni">
   <div class="s-head"><h2>금융니즈 매트릭스 (밀집도 × FNI)</h2>
-    <p>가로축 = 점포 밀집도, 세로축 = 금융니즈 강도(개·폐업·영업기간 변화). 우상단일수록 최우선, 좌상단은 선점 가치 높은 신흥기회.</p></div>
+    <p>가로축 = 점포 밀집도, 세로축 = 금융니즈 강도. 우상단=최우선, 좌상단=선점 가치 높은 신흥기회.</p></div>
   <div class="card">
     <div class="scatter" id="scatter"></div>
     <div class="legend">
@@ -188,35 +196,55 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--sub);font-siz
       <span><i style="background:#9aa0ad"></i>후순위</span>
     </div>
   </div>
-  <div class="card" style="margin-top:16px"><table><thead><tr>
-    <th>지역</th><th class="r">밀집도</th><th class="r">FNI</th><th>국면</th><th class="hide-sm">추천 카피 방향</th></tr></thead>
+  <div class="s-sub">FNI 5축 분해 — 무엇이 금융니즈를 끌어올렸나</div>
+  <div class="card scroll"><table><thead><tr>
+    <th>지역</th><th class="r">FNI</th><th class="r">신생</th><th class="r">폐업압박</th>
+    <th class="r">동태성</th><th class="r">자영업</th><th class="r">모멘텀</th><th>국면</th></tr></thead>
     <tbody id="fniTbl"></tbody></table></div>
+</section>
+
+<!-- SEGMENTS -->
+<section class="section" id="segments">
+  <div class="s-head"><h2>세그먼트 타겟팅</h2><p>사장님 타겟 세그먼트별 추천 지역·버스·지하철 (각 TOP 5)</p></div>
+  <div id="segWrap"></div>
 </section>
 
 <!-- COVERAGE -->
 <section class="section" id="coverage">
   <div class="s-head"><h2>상권 커버리지 & 지도</h2><p id="covDesc"></p></div>
   <div class="card"><div class="maplab">● 원 크기 = 금융니즈(FNI) · 색 = 커버 여부 (파랑=커버, 빨강=미커버)</div><div id="map"></div></div>
-  <div class="card" style="margin-top:16px"><table><thead><tr>
-    <th>지역</th><th class="r">소상공인 지수</th><th>커버</th><th class="r hide-sm">커버 노선수</th><th>커버 노선</th></tr></thead>
+  <div class="card scroll" style="margin-top:16px"><table><thead><tr>
+    <th>지역</th><th class="r">소상공인 지수</th><th>커버</th><th class="r">노선수</th><th>커버 노선</th></tr></thead>
     <tbody id="covTbl"></tbody></table></div>
+  <div class="s-sub" id="gapHead">추가 예산 시 Gap 커버 후보 노선</div>
+  <div class="card scroll"><table><thead><tr>
+    <th>#</th><th>매체</th><th>노선</th><th>추가 커버 상권</th><th class="r">점수</th></tr></thead>
+    <tbody id="gapTbl"></tbody></table></div>
+</section>
+
+<!-- STRATEGY -->
+<section class="section" id="strategy">
+  <div class="s-head"><h2>우선 집행 권장안</h2><p>버스 노선 효율 순으로 A·B·C 등급 분류</p></div>
+  <div class="grade-wrap" id="gradeWrap"></div>
+  <div class="s-sub">다음 액션 제안</div>
+  <div class="card" style="padding:18px"><ol class="actions" id="actions"></ol></div>
 </section>
 
 </div>
 
 <footer><div class="wrap">
-  케이뱅크 내부 기획 도구 · 서울 열린데이터광장 + 서울시 상권분석서비스 기반 · AI 분석 결과는 집행 전 내규 검토 후 활용하세요
+  케이뱅크 내부 기획 도구 · 서울 열린데이터광장 + 서울시 상권분석서비스 + 실시간 도시데이터 기반 · AI 분석 결과는 집행 전 내규 검토 후 활용하세요
 </div></footer>
 <div class="tip" id="tip"></div>
 
 <script>
-const DATA = {"fni": [{"name": "마곡", "density": 1.7, "store": 4735, "fni": 77.7, "quadrant": "신흥기회(화이트스페이스)", "copy": "버티는 사장님 운영자금·대환 — '매출 들어오기 전에 막아주는 통장'", "lat": 37.558, "lng": 126.835}, {"name": "망원·연남", "density": 1.8, "store": 5396, "fni": 75.2, "quadrant": "신흥기회(화이트스페이스)", "copy": "버티는 사장님 운영자금·대환 — '매출 들어오기 전에 막아주는 통장'", "lat": 37.557, "lng": 126.913}, {"name": "홍대·합정", "density": 3.0, "store": 6456, "fni": 74.4, "quadrant": "최우선공략", "copy": "버티는 사장님 운영자금·대환 — '매출 들어오기 전에 막아주는 통장'", "lat": 37.556, "lng": 126.924}, {"name": "성수", "density": 1.9, "store": 5241, "fni": 61.1, "quadrant": "신흥기회(화이트스페이스)", "copy": "창업 초기 사장님 신규 유치 — '첫 사업자계좌, 사장님 뱅킹으로 시작'", "lat": 37.545, "lng": 127.056}, {"name": "잠실", "density": 1.9, "store": 13486, "fni": 54.4, "quadrant": "신흥기회(화이트스페이스)", "copy": "선별 집행 — 보조 노출", "lat": 37.513, "lng": 127.1}, {"name": "신림", "density": 2.3, "store": 4200, "fni": 54.1, "quadrant": "최우선공략", "copy": "버티는 사장님 운영자금·대환 — '매출 들어오기 전에 막아주는 통장'", "lat": 37.484, "lng": 126.93}, {"name": "청량리", "density": 1.8, "store": 4188, "fni": 53.4, "quadrant": "신흥기회(화이트스페이스)", "copy": "창업 초기 사장님 신규 유치 — '첫 사업자계좌, 사장님 뱅킹으로 시작'", "lat": 37.58, "lng": 127.047}, {"name": "강동·천호", "density": 2.5, "store": 7671, "fni": 49.7, "quadrant": "최우선공략", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.538, "lng": 127.124}, {"name": "노원", "density": 1.9, "store": 4818, "fni": 47.2, "quadrant": "신흥기회(화이트스페이스)", "copy": "선별 집행 — 보조 노출", "lat": 37.655, "lng": 127.061}, {"name": "강남", "density": 5.0, "store": 19569, "fni": 45.3, "quadrant": "최우선공략", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.498, "lng": 127.028}, {"name": "건대입구", "density": 1.8, "store": 6879, "fni": 43.8, "quadrant": "신흥기회(화이트스페이스)", "copy": "선별 집행 — 보조 노출", "lat": 37.54, "lng": 127.069}, {"name": "영등포", "density": 2.0, "store": 6959, "fni": 42.5, "quadrant": "안정고착(함정)", "copy": "창업 초기 사장님 신규 유치 — '첫 사업자계좌, 사장님 뱅킹으로 시작'", "lat": 37.516, "lng": 126.906}, {"name": "사당·이수", "density": 2.0, "store": 3698, "fni": 41.1, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.476, "lng": 126.982}, {"name": "가산디지털단지", "density": 2.2, "store": 11022, "fni": 40.1, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.478, "lng": 126.882}, {"name": "왕십리", "density": 1.6, "store": 3912, "fni": 40.1, "quadrant": "후순위", "copy": "선별 집행 — 보조 노출", "lat": 37.561, "lng": 127.038}, {"name": "신촌·이대", "density": 1.7, "store": 3560, "fni": 38.7, "quadrant": "후순위", "copy": "선별 집행 — 보조 노출", "lat": 37.556, "lng": 126.936}, {"name": "여의도", "density": 1.5, "store": 3978, "fni": 38.4, "quadrant": "후순위", "copy": "선별 집행 — 보조 노출", "lat": 37.521, "lng": 126.924}, {"name": "동대문", "density": 2.4, "store": 17895, "fni": 35.7, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.571, "lng": 127.01}, {"name": "광화문·종로", "density": 3.5, "store": 16844, "fni": 33.3, "quadrant": "안정고착(함정)", "copy": "창업 초기 사장님 신규 유치 — '첫 사업자계좌, 사장님 뱅킹으로 시작'", "lat": 37.571, "lng": 126.977}, {"name": "을지로·명동", "density": 3.3, "store": 3457, "fni": 32.4, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.563, "lng": 126.986}, {"name": "구로디지털단지", "density": 2.0, "store": 12158, "fni": 29.6, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.485, "lng": 126.901}, {"name": "남대문", "density": 2.1, "store": 15324, "fni": 23.9, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.559, "lng": 126.974}], "regions": [{"rank": 1, "name": "강남", "total": 80.7, "store": 30.0, "livelihood": 18.8, "population": 12.4, "access": 15.0, "finance": 4.5, "routes": 30, "reason": "점포 28,279개 초밀집 / 사업자 계좌 수요층 / 버스 30개 노선 접근 / 사장님 뱅킹 핵심 타겟"}, {"rank": 2, "name": "광화문·종로", "total": 67.8, "store": 16.4, "livelihood": 13.1, "population": 20.0, "access": 15.0, "finance": 3.3, "routes": 29, "reason": "점포 17,087개 초밀집 / 소상공인/자영업자 밀집 / 사업자 계좌 수요층 / 버스 29개 노선 접근"}, {"rank": 3, "name": "강동·천호", "total": 53.2, "store": 8.4, "livelihood": 9.4, "population": 15.4, "access": 15.0, "finance": 5.0, "routes": 28, "reason": "점포 10,538개 초밀집 / 소상공인/자영업자 밀집 / 버스 28개 노선 접근"}, {"rank": 4, "name": "홍대·합정", "total": 48.2, "store": 11.6, "livelihood": 11.2, "population": 4.4, "access": 13.5, "finance": 7.4, "routes": 18, "reason": "점포 13,167개 초밀집 / 소상공인/자영업자 밀집 / 버스 18개 노선 접근"}, {"rank": 5, "name": "노원", "total": 46.0, "store": 3.3, "livelihood": 7.1, "population": 15.8, "access": 15.0, "finance": 4.7, "routes": 41, "reason": "점포 6,397개 밀집 / 소상공인/자영업자 밀집 / 버스 41개 노선 접근"}, {"rank": 6, "name": "신림", "total": 44.0, "store": 6.1, "livelihood": 8.6, "population": 8.9, "access": 15.0, "finance": 5.4, "routes": 23, "reason": "점포 8,630개 초밀집 / 소상공인/자영업자 밀집 / 버스 23개 노선 접근"}, {"rank": 7, "name": "동대문", "total": 43.4, "store": 7.1, "livelihood": 9.0, "population": 11.7, "access": 12.0, "finance": 3.6, "routes": 16, "reason": "점포 9,487개 초밀집 / 소상공인/자영업자 밀집 / 도매/소매 사업자 밀집 / 버스 16개 노선 접근"}, {"rank": 8, "name": "가산디지털단지", "total": 42.5, "store": 5.4, "livelihood": 8.2, "population": 9.9, "access": 15.0, "finance": 4.0, "routes": 21, "reason": "점포 8,069개 초밀집 / 사업자 계좌 수요층 / 버스 21개 노선 접근"}, {"rank": 9, "name": "여의도", "total": 41.9, "store": 0.0, "livelihood": 5.6, "population": 17.5, "access": 15.0, "finance": 3.8, "routes": 20, "reason": "점포 3,658개 / 사업자 계좌 수요층 / 버스 20개 노선 접근"}, {"rank": 10, "name": "사당·이수", "total": 40.8, "store": 4.2, "livelihood": 7.5, "population": 10.0, "access": 15.0, "finance": 4.1, "routes": 30, "reason": "점포 7,077개 밀집 / 소상공인/자영업자 밀집 / 버스 30개 노선 접근"}], "bus": [{"rank": 1, "name": "146번(상계주공7단지~강남역)", "type": "지선버스", "passengers": 46859, "total": 57.4, "biz": 14.6, "areas": ["강남", "노원"], "reason": "일평균 46,859명 / 강남 · 노원 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 193,809명"}, {"rank": 2, "name": "540번(군포공영차고지~강남성모병원)", "type": "지선버스", "passengers": 31478, "total": 50.9, "biz": 14.8, "areas": ["강남", "사당·이수"], "reason": "일평균 31,478명 / 강남 · 사당·이수 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 131,578명"}, {"rank": 3, "name": "643번(양천차고지~강남역)", "type": "지선버스", "passengers": 40509, "total": 50.1, "biz": 10.6, "areas": ["강남"], "reason": "일평균 40,509명 / 강남 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 222,800명"}, {"rank": 4, "name": "500번(석수역~을지로입구)", "type": "지선버스", "passengers": 32199, "total": 49.7, "biz": 14.4, "areas": ["광화문·종로", "을지로·명동"], "reason": "일평균 32,199명 / 광화문·종로 · 을지로·명동 경유 / 월 추정 도달 131,758명"}, {"rank": 5, "name": "5712번(가산동~홍대입구역)", "type": "간선버스", "passengers": 40454, "total": 48.9, "biz": 11.0, "areas": ["가산디지털단지", "홍대·합정"], "reason": "일평균 40,454명 / 가산디지털단지 · 홍대·합정 경유 / 월 추정 도달 137,058명"}, {"rank": 6, "name": "145번(번동~강남역)", "type": "지선버스", "passengers": 35671, "total": 47.9, "biz": 10.6, "areas": ["강남"], "reason": "일평균 35,671명 / 강남 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 196,190명"}, {"rank": 7, "name": "143번(정릉~개포동)", "type": "지선버스", "passengers": 70491, "total": 45.4, "biz": 0.0, "areas": [], "reason": "일평균 70,491명 고이용 노선 / 월 추정 도달 108,556명"}, {"rank": 8, "name": "3412번(강동공영차고지~강남역)", "type": "간선버스", "passengers": 18516, "total": 45.1, "biz": 15.9, "areas": ["강남", "강동·천호"], "reason": "일평균 18,516명 / 강남 · 강동·천호 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 81,470명"}, {"rank": 9, "name": "340번(강동차고지~무지개아파트)", "type": "지선버스", "passengers": 49484, "total": 44.2, "biz": 5.3, "areas": ["강동·천호"], "reason": "일평균 49,484명 / 강동·천호 경유 / 월 추정 도달 163,297명"}, {"rank": 10, "name": "506번(신림동~종로1가)", "type": "지선버스", "passengers": 27338, "total": 43.7, "biz": 12.3, "areas": ["광화문·종로", "신림"], "reason": "일평균 27,338명 / 광화문·종로 · 신림 경유 / 월 추정 도달 99,838명"}], "subway": [{"name": "2호선", "rank": 1, "passengers": 3451378, "total": 97.0, "mass": 98.9, "bizt": 95.7, "fni": 46.8, "reach": 17038763, "areas": ["강남", "건대입구", "광화문·종로", "구로디지털단지", "동대문", "망원·연남", "사당·이수", "성수", "신림", "신촌·이대", "영등포", "왕십리", "을지로·명동", "잠실", "홍대·합정"]}, {"name": "5호선", "rank": 2, "passengers": 1636562, "total": 76.4, "mass": 58.7, "bizt": 84.7, "fni": 44.3, "reach": 7791344, "areas": ["강동·천호", "광화문·종로", "동대문", "마곡", "신촌·이대", "여의도", "영등포", "왕십리", "을지로·명동", "잠실"]}, {"name": "7호선", "rank": 3, "passengers": 1475180, "total": 74.5, "mass": 55.3, "bizt": 83.6, "fni": 43.4, "reach": 6928920, "areas": ["가산디지털단지", "강남", "건대입구", "구로디지털단지", "노원", "사당·이수", "성수", "신촌·이대"]}, {"name": "4호선", "rank": 4, "passengers": 1284214, "total": 69.5, "mass": 51.4, "bizt": 77.4, "fni": 36.1, "reach": 6656338, "areas": ["남대문", "노원", "동대문", "사당·이수", "을지로·명동"]}, {"name": "9호선", "rank": 5, "passengers": 719141, "total": 62.1, "mass": 41.3, "bizt": 71.0, "fni": 49.0, "reach": 3183206, "areas": ["강남", "마곡", "사당·이수", "여의도", "영등포"]}, {"name": "1호선", "rank": 6, "passengers": 625986, "total": 58.7, "mass": 38.2, "bizt": 67.2, "fni": 36.6, "reach": 3181261, "areas": ["광화문·종로", "남대문", "동대문", "청량리"]}, {"name": "3호선", "rank": 7, "passengers": 1302303, "total": 58.4, "mass": 52.3, "bizt": 58.5, "fni": 37.0, "reach": 6131243, "areas": ["강남", "광화문·종로", "을지로·명동"]}, {"name": "6호선", "rank": 8, "passengers": 830636, "total": 57.0, "mass": 41.3, "bizt": 62.5, "fni": 61.8, "reach": 4325454, "areas": ["동대문", "망원·연남", "홍대·합정"]}, {"name": "경부선", "rank": 9, "passengers": 1104592, "total": 54.9, "mass": 47.0, "bizt": 55.7, "fni": 31.2, "reach": 5103215, "areas": ["가산디지털단지", "구로디지털단지", "남대문"]}, {"name": "분당선", "rank": 10, "passengers": 942464, "total": 52.0, "mass": 43.7, "bizt": 52.9, "fni": 46.6, "reach": 4271247, "areas": ["강남", "광화문·종로", "성수"]}, {"name": "경의선", "rank": 11, "passengers": 280586, "total": 50.8, "mass": 29.9, "bizt": 59.0, "fni": 45.7, "reach": 1452481, "areas": ["남대문", "신촌·이대", "홍대·합정"]}, {"name": "공항철도 1호선", "rank": 12, "passengers": 299808, "total": 48.6, "mass": 31.4, "bizt": 54.3, "fni": 58.7, "reach": 1446454, "areas": ["남대문", "마곡", "홍대·합정"]}, {"name": "경원선", "rank": 13, "passengers": 497352, "total": 38.9, "mass": 34.4, "bizt": 36.5, "fni": 46.8, "reach": 2429067, "areas": ["왕십리", "청량리"]}, {"name": "8호선", "rank": 14, "passengers": 520442, "total": 37.7, "mass": 34.3, "bizt": 34.5, "fni": 52.0, "reach": 2381543, "areas": ["강동·천호", "잠실"]}, {"name": "9호선2~3단계", "rank": 15, "passengers": 288922, "total": 35.3, "mass": 32.3, "bizt": 31.6, "fni": 49.8, "reach": 1245832, "areas": ["강남", "잠실"]}, {"name": "신림선", "rank": 16, "passengers": 114046, "total": 34.9, "mass": 26.4, "bizt": 34.5, "fni": 46.2, "reach": 536929, "areas": ["신림", "여의도"]}, {"name": "우이신설선", "rank": 17, "passengers": 111664, "total": 26.3, "mass": 25.7, "bizt": 20.4, "fni": 35.7, "reach": 604326, "areas": ["동대문"]}, {"name": "중앙선", "rank": 18, "passengers": 208212, "total": 25.7, "mass": 28.3, "bizt": 17.9, "fni": 53.4, "reach": 1016907, "areas": ["청량리"]}, {"name": "일산선", "rank": 19, "passengers": 287539, "total": 24.7, "mass": 30.0, "bizt": 15.4, "fni": 77.7, "reach": 1151306, "areas": ["마곡"]}, {"name": "수인선", "rank": 20, "passengers": 157522, "total": 23.8, "mass": 27.3, "bizt": 15.5, "fni": 45.3, "reach": 658442, "areas": ["강남"]}, {"name": "경인선", "rank": 21, "passengers": 641010, "total": 19.4, "mass": 37.4, "bizt": 2.2, "fni": 0.0, "reach": 987155, "areas": []}, {"name": "안산선", "rank": 22, "passengers": 292852, "total": 16.1, "mass": 30.1, "bizt": 1.0, "fni": 0.0, "reach": 450992, "areas": []}, {"name": "과천선", "rank": 23, "passengers": 289251, "total": 16.1, "mass": 30.0, "bizt": 1.0, "fni": 0.0, "reach": 445447, "areas": []}, {"name": "경강선", "rank": 24, "passengers": 85686, "total": 14.2, "mass": 25.8, "bizt": 0.2, "fni": 0.0, "reach": 131956, "areas": []}, {"name": "장항선", "rank": 25, "passengers": 47389, "total": 13.8, "mass": 25.0, "bizt": 0.1, "fni": 0.0, "reach": 72979, "areas": []}, {"name": "서해선", "rank": 26, "passengers": 27477, "total": 13.6, "mass": 24.6, "bizt": 0.0, "fni": 0.0, "reach": 42315, "areas": []}, {"name": "경춘선", "rank": 27, "passengers": 96883, "total": 13.1, "mass": 22.6, "bizt": 0.2, "fni": 0.0, "reach": 149200, "areas": []}], "mix": [{"rank": 1, "name": "2호선", "media": "subway", "total": 97.0, "cost": 4000000, "reach": 17038763, "newAreas": 15, "areas": ["강남", "건대입구", "광화문·종로", "구로디지털단지", "동대문", "망원·연남", "사당·이수", "성수", "신림", "신촌·이대", "영등포", "왕십리", "을지로·명동", "잠실", "홍대·합정"]}, {"rank": 2, "name": "146번(상계주공7단지~강남역)", "media": "bus", "total": 57.4, "cost": 2500000, "reach": 193809, "newAreas": 1, "areas": ["강남", "노원"]}, {"rank": 3, "name": "540번(군포공영차고지~강남성모병원)", "media": "bus", "total": 50.9, "cost": 2500000, "reach": 131578, "newAreas": 0, "areas": ["강남", "사당·이수"]}, {"rank": 4, "name": "643번(양천차고지~강남역)", "media": "bus", "total": 50.1, "cost": 2500000, "reach": 222800, "newAreas": 0, "areas": ["강남"]}, {"rank": 5, "name": "500번(석수역~을지로입구)", "media": "bus", "total": 49.7, "cost": 2500000, "reach": 131758, "newAreas": 0, "areas": ["광화문·종로", "을지로·명동"]}, {"rank": 6, "name": "5712번(가산동~홍대입구역)", "media": "bus", "total": 48.9, "cost": 2500000, "reach": 137058, "newAreas": 1, "areas": ["가산디지털단지", "홍대·합정"]}, {"rank": 7, "name": "145번(번동~강남역)", "media": "bus", "total": 47.9, "cost": 2500000, "reach": 196190, "newAreas": 0, "areas": ["강남"]}, {"rank": 8, "name": "5호선", "media": "subway", "total": 76.4, "cost": 4000000, "reach": 7791344, "newAreas": 3, "areas": ["강동·천호", "광화문·종로", "동대문", "마곡", "신촌·이대", "여의도", "영등포", "왕십리", "을지로·명동", "잠실"]}, {"rank": 9, "name": "7호선", "media": "subway", "total": 74.5, "cost": 4000000, "reach": 6928920, "newAreas": 0, "areas": ["가산디지털단지", "강남", "건대입구", "구로디지털단지", "노원", "사당·이수", "성수", "신촌·이대"]}, {"rank": 10, "name": "143번(정릉~개포동)", "media": "bus", "total": 45.4, "cost": 2500000, "reach": 108556, "newAreas": 0, "areas": []}, {"rank": 11, "name": "3412번(강동공영차고지~강남역)", "media": "bus", "total": 45.1, "cost": 2500000, "reach": 81470, "newAreas": 0, "areas": ["강남", "강동·천호"]}, {"rank": 12, "name": "340번(강동차고지~무지개아파트)", "media": "bus", "total": 44.2, "cost": 2500000, "reach": 163297, "newAreas": 0, "areas": ["강동·천호"]}, {"rank": 13, "name": "506번(신림동~종로1가)", "media": "bus", "total": 43.7, "cost": 2500000, "reach": 99838, "newAreas": 0, "areas": ["광화문·종로", "신림"]}, {"rank": 14, "name": "4호선", "media": "subway", "total": 69.5, "cost": 4000000, "reach": 6656338, "newAreas": 1, "areas": ["남대문", "노원", "동대문", "사당·이수", "을지로·명동"]}, {"rank": 15, "name": "463(염곡동~국회의사당)", "media": "bus", "total": 42.6, "cost": 2500000, "reach": 96930, "newAreas": 0, "areas": ["사당·이수", "여의도"]}, {"rank": 16, "name": "402번(장지공영차고지~시청)", "media": "bus", "total": 42.0, "cost": 2500000, "reach": 156537, "newAreas": 0, "areas": ["광화문·종로"]}, {"rank": 17, "name": "600번(온수동~광화문)", "media": "bus", "total": 41.5, "cost": 2500000, "reach": 148051, "newAreas": 0, "areas": ["광화문·종로"]}], "coverage": [{"name": "신림", "index": 5.0, "covered": true, "routeCount": 2, "routes": "2호선,506번(신림동~종로1가)", "priority": "tier1"}, {"name": "동대문", "index": 4.9, "covered": true, "routeCount": 3, "routes": "2호선,5호선,4호선", "priority": "tier1"}, {"name": "남대문", "index": 4.9, "covered": true, "routeCount": 1, "routes": "4호선", "priority": "tier1"}, {"name": "건대입구", "index": 4.8, "covered": true, "routeCount": 2, "routes": "2호선,7호선", "priority": "tier1"}, {"name": "을지로·명동", "index": 4.8, "covered": true, "routeCount": 4, "routes": "2호선,500번(석수역~을지로입구),5호선,4호선", "priority": "tier1"}, {"name": "영등포", "index": 4.7, "covered": true, "routeCount": 2, "routes": "2호선,5호선", "priority": "tier1"}, {"name": "망원·연남", "index": 4.6, "covered": true, "routeCount": 1, "routes": "2호선", "priority": "tier1"}, {"name": "홍대·합정", "index": 4.5, "covered": true, "routeCount": 2, "routes": "2호선,5712번(가산동~홍대입구역)", "priority": "tier1"}, {"name": "신촌·이대", "index": 4.5, "covered": true, "routeCount": 3, "routes": "2호선,5호선,7호선", "priority": "tier1"}, {"name": "노원", "index": 4.4, "covered": true, "routeCount": 3, "routes": "146번(상계주공7단지~강남역),7호선,4호선", "priority": "tier2"}, {"name": "왕십리", "index": 4.3, "covered": true, "routeCount": 2, "routes": "2호선,5호선", "priority": "tier2"}, {"name": "청량리", "index": 4.3, "covered": false, "routeCount": 0, "routes": "", "priority": "tier2"}, {"name": "성수", "index": 4.2, "covered": true, "routeCount": 2, "routes": "2호선,7호선", "priority": "tier2"}, {"name": "사당·이수", "index": 4.2, "covered": true, "routeCount": 5, "routes": "2호선,540번(군포공영차고지~강남성모병원),7호선,4호선,463(염곡동~국회의사당)", "priority": "tier2"}, {"name": "강동·천호", "index": 4.1, "covered": true, "routeCount": 3, "routes": "5호선,3412번(강동공영차고지~강남역),340번(강동차고지~무지개아파트)", "priority": "tier2"}, {"name": "광화문·종로", "index": 4.0, "covered": true, "routeCount": 6, "routes": "2호선,500번(석수역~을지로입구),5호선,506번(신림동~종로1가),402번(장지공영차고지~시청)", "priority": "tier2"}, {"name": "잠실", "index": 3.8, "covered": true, "routeCount": 2, "routes": "2호선,5호선", "priority": "tier2"}, {"name": "구로디지털단지", "index": 3.6, "covered": true, "routeCount": 2, "routes": "2호선,7호선", "priority": "tier2"}, {"name": "강남", "index": 3.5, "covered": true, "routeCount": 7, "routes": "2호선,146번(상계주공7단지~강남역),540번(군포공영차고지~강남성모병원),643번(양천차고지~강남역),145번(번동~강남역)", "priority": "tier2"}, {"name": "가산디지털단지", "index": 3.5, "covered": true, "routeCount": 2, "routes": "5712번(가산동~홍대입구역),7호선", "priority": "tier2"}, {"name": "마곡", "index": 3.3, "covered": true, "routeCount": 1, "routes": "5호선", "priority": "tier2"}, {"name": "여의도", "index": 3.2, "covered": true, "routeCount": 2, "routes": "5호선,463(염곡동~국회의사당)", "priority": "tier2"}]};
+const DATA = {"fni": [{"name": "마곡", "density": 1.7, "store": 4735, "fni": 77.7, "f_new": 25.0, "f_close": 16.7, "f_dyn": 15.0, "f_self": 2.8, "f_mom": 18.2, "quadrant": "신흥기회(화이트스페이스)", "copy": "버티는 사장님 운영자금·대환 — '매출 들어오기 전에 막아주는 통장'", "lat": 37.558, "lng": 126.835}, {"name": "망원·연남", "density": 1.8, "store": 5396, "fni": 75.2, "f_new": 17.0, "f_close": 15.8, "f_dyn": 10.9, "f_self": 8.2, "f_mom": 23.3, "quadrant": "신흥기회(화이트스페이스)", "copy": "버티는 사장님 운영자금·대환 — '매출 들어오기 전에 막아주는 통장'", "lat": 37.557, "lng": 126.913}, {"name": "홍대·합정", "density": 3.0, "store": 6456, "fni": 74.4, "f_new": 20.7, "f_close": 20.0, "f_dyn": 15.0, "f_self": 5.2, "f_mom": 13.5, "quadrant": "최우선공략", "copy": "버티는 사장님 운영자금·대환 — '매출 들어오기 전에 막아주는 통장'", "lat": 37.556, "lng": 126.924}, {"name": "성수", "density": 1.9, "store": 5241, "fni": 61.1, "f_new": 19.4, "f_close": 4.4, "f_dyn": 12.7, "f_self": 8.4, "f_mom": 16.2, "quadrant": "신흥기회(화이트스페이스)", "copy": "창업 초기 사장님 신규 유치 — '첫 사업자계좌, 사장님 뱅킹으로 시작'", "lat": 37.545, "lng": 127.056}, {"name": "잠실", "density": 1.9, "store": 13486, "fni": 54.4, "f_new": 14.1, "f_close": 10.8, "f_dyn": 12.2, "f_self": 1.8, "f_mom": 15.4, "quadrant": "신흥기회(화이트스페이스)", "copy": "선별 집행 — 보조 노출", "lat": 37.513, "lng": 127.1}, {"name": "신림", "density": 2.3, "store": 4200, "fni": 54.1, "f_new": 11.5, "f_close": 17.3, "f_dyn": 9.1, "f_self": 0.6, "f_mom": 15.6, "quadrant": "최우선공략", "copy": "버티는 사장님 운영자금·대환 — '매출 들어오기 전에 막아주는 통장'", "lat": 37.484, "lng": 126.93}, {"name": "청량리", "density": 1.8, "store": 4188, "fni": 53.4, "f_new": 8.9, "f_close": 9.4, "f_dyn": 5.9, "f_self": 6.6, "f_mom": 22.7, "quadrant": "신흥기회(화이트스페이스)", "copy": "창업 초기 사장님 신규 유치 — '첫 사업자계좌, 사장님 뱅킹으로 시작'", "lat": 37.58, "lng": 127.047}, {"name": "강동·천호", "density": 2.5, "store": 7671, "fni": 49.7, "f_new": 11.9, "f_close": 9.5, "f_dyn": 8.3, "f_self": 5.6, "f_mom": 14.4, "quadrant": "최우선공략", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.538, "lng": 127.124}, {"name": "노원", "density": 1.9, "store": 4818, "fni": 47.2, "f_new": 14.7, "f_close": 8.7, "f_dyn": 10.8, "f_self": 0.8, "f_mom": 12.2, "quadrant": "신흥기회(화이트스페이스)", "copy": "선별 집행 — 보조 노출", "lat": 37.655, "lng": 127.061}, {"name": "강남", "density": 5.0, "store": 19569, "fni": 45.3, "f_new": 13.0, "f_close": 5.6, "f_dyn": 10.5, "f_self": 7.4, "f_mom": 8.9, "quadrant": "최우선공략", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.498, "lng": 127.028}, {"name": "건대입구", "density": 1.8, "store": 6879, "fni": 43.8, "f_new": 10.4, "f_close": 6.3, "f_dyn": 6.3, "f_self": 3.2, "f_mom": 17.7, "quadrant": "신흥기회(화이트스페이스)", "copy": "선별 집행 — 보조 노출", "lat": 37.54, "lng": 127.069}, {"name": "영등포", "density": 2.0, "store": 6959, "fni": 42.5, "f_new": 7.6, "f_close": 6.1, "f_dyn": 5.9, "f_self": 4.1, "f_mom": 18.8, "quadrant": "안정고착(함정)", "copy": "창업 초기 사장님 신규 유치 — '첫 사업자계좌, 사장님 뱅킹으로 시작'", "lat": 37.516, "lng": 126.906}, {"name": "사당·이수", "density": 2.0, "store": 3698, "fni": 41.1, "f_new": 12.2, "f_close": 4.1, "f_dyn": 8.0, "f_self": 2.2, "f_mom": 14.7, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.476, "lng": 126.982}, {"name": "가산디지털단지", "density": 2.2, "store": 11022, "fni": 40.1, "f_new": 10.5, "f_close": 4.8, "f_dyn": 6.6, "f_self": 4.8, "f_mom": 13.4, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.478, "lng": 126.882}, {"name": "왕십리", "density": 1.6, "store": 3912, "fni": 40.1, "f_new": 8.1, "f_close": 4.6, "f_dyn": 5.4, "f_self": 6.7, "f_mom": 15.4, "quadrant": "후순위", "copy": "선별 집행 — 보조 노출", "lat": 37.561, "lng": 127.038}, {"name": "신촌·이대", "density": 1.7, "store": 3560, "fni": 38.7, "f_new": 8.6, "f_close": 8.2, "f_dyn": 7.5, "f_self": 0.4, "f_mom": 14.1, "quadrant": "후순위", "copy": "선별 집행 — 보조 노출", "lat": 37.556, "lng": 126.936}, {"name": "여의도", "density": 1.5, "store": 3978, "fni": 38.4, "f_new": 12.1, "f_close": 4.4, "f_dyn": 7.5, "f_self": 0.0, "f_mom": 14.4, "quadrant": "후순위", "copy": "선별 집행 — 보조 노출", "lat": 37.521, "lng": 126.924}, {"name": "동대문", "density": 2.4, "store": 17895, "fni": 35.7, "f_new": 5.9, "f_close": 3.7, "f_dyn": 0.7, "f_self": 15.0, "f_mom": 10.5, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.571, "lng": 127.01}, {"name": "광화문·종로", "density": 3.5, "store": 16844, "fni": 33.3, "f_new": 0.3, "f_close": 1.7, "f_dyn": 0.9, "f_self": 9.4, "f_mom": 21.0, "quadrant": "안정고착(함정)", "copy": "창업 초기 사장님 신규 유치 — '첫 사업자계좌, 사장님 뱅킹으로 시작'", "lat": 37.571, "lng": 126.977}, {"name": "을지로·명동", "density": 3.3, "store": 3457, "fni": 32.4, "f_new": 4.6, "f_close": 9.0, "f_dyn": 0.0, "f_self": 4.8, "f_mom": 14.0, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.563, "lng": 126.986}, {"name": "구로디지털단지", "density": 2.0, "store": 12158, "fni": 29.6, "f_new": 8.1, "f_close": 1.9, "f_dyn": 3.3, "f_self": 8.5, "f_mom": 7.8, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.485, "lng": 126.901}, {"name": "남대문", "density": 2.1, "store": 15324, "fni": 23.9, "f_new": 0.0, "f_close": 0.0, "f_dyn": 0.0, "f_self": 8.7, "f_mom": 15.2, "quadrant": "안정고착(함정)", "copy": "밀집 상권 대량 노출 — '사장님이라면 케이뱅크'", "lat": 37.559, "lng": 126.974}], "regions": [{"rank": 1, "name": "강남", "total": 80.7, "store": 30.0, "livelihood": 18.8, "population": 12.4, "access": 15.0, "finance": 4.5, "routes": 30, "reason": "점포 28,279개 초밀집 / 사업자 계좌 수요층 / 버스 30개 노선 접근 / 사장님 뱅킹 핵심 타겟"}, {"rank": 2, "name": "광화문·종로", "total": 67.8, "store": 16.4, "livelihood": 13.1, "population": 20.0, "access": 15.0, "finance": 3.3, "routes": 29, "reason": "점포 17,087개 초밀집 / 소상공인/자영업자 밀집 / 사업자 계좌 수요층 / 버스 29개 노선 접근"}, {"rank": 3, "name": "강동·천호", "total": 53.2, "store": 8.4, "livelihood": 9.4, "population": 15.4, "access": 15.0, "finance": 5.0, "routes": 28, "reason": "점포 10,538개 초밀집 / 소상공인/자영업자 밀집 / 버스 28개 노선 접근"}, {"rank": 4, "name": "홍대·합정", "total": 48.2, "store": 11.6, "livelihood": 11.2, "population": 4.4, "access": 13.5, "finance": 7.4, "routes": 18, "reason": "점포 13,167개 초밀집 / 소상공인/자영업자 밀집 / 버스 18개 노선 접근"}, {"rank": 5, "name": "노원", "total": 46.0, "store": 3.3, "livelihood": 7.1, "population": 15.8, "access": 15.0, "finance": 4.7, "routes": 41, "reason": "점포 6,397개 밀집 / 소상공인/자영업자 밀집 / 버스 41개 노선 접근"}, {"rank": 6, "name": "신림", "total": 44.0, "store": 6.1, "livelihood": 8.6, "population": 8.9, "access": 15.0, "finance": 5.4, "routes": 23, "reason": "점포 8,630개 초밀집 / 소상공인/자영업자 밀집 / 버스 23개 노선 접근"}, {"rank": 7, "name": "동대문", "total": 43.4, "store": 7.1, "livelihood": 9.0, "population": 11.7, "access": 12.0, "finance": 3.6, "routes": 16, "reason": "점포 9,487개 초밀집 / 소상공인/자영업자 밀집 / 도매/소매 사업자 밀집 / 버스 16개 노선 접근"}, {"rank": 8, "name": "가산디지털단지", "total": 42.5, "store": 5.4, "livelihood": 8.2, "population": 9.9, "access": 15.0, "finance": 4.0, "routes": 21, "reason": "점포 8,069개 초밀집 / 사업자 계좌 수요층 / 버스 21개 노선 접근"}, {"rank": 9, "name": "여의도", "total": 41.9, "store": 0.0, "livelihood": 5.6, "population": 17.5, "access": 15.0, "finance": 3.8, "routes": 20, "reason": "점포 3,658개 / 사업자 계좌 수요층 / 버스 20개 노선 접근"}, {"rank": 10, "name": "사당·이수", "total": 40.8, "store": 4.2, "livelihood": 7.5, "population": 10.0, "access": 15.0, "finance": 4.1, "routes": 30, "reason": "점포 7,077개 밀집 / 소상공인/자영업자 밀집 / 버스 30개 노선 접근"}], "bus": [{"rank": 1, "name": "146번(상계주공7단지~강남역)", "type": "지선버스", "passengers": 46859, "reach": null, "total": 57.4, "biz": 14.6, "areas": ["강남", "노원"], "reason": "일평균 46,859명 / 강남 · 노원 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 193,809명"}, {"rank": 2, "name": "540번(군포공영차고지~강남성모병원)", "type": "지선버스", "passengers": 31478, "reach": null, "total": 50.9, "biz": 14.8, "areas": ["강남", "사당·이수"], "reason": "일평균 31,478명 / 강남 · 사당·이수 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 131,578명"}, {"rank": 3, "name": "643번(양천차고지~강남역)", "type": "지선버스", "passengers": 40509, "reach": null, "total": 50.1, "biz": 10.6, "areas": ["강남"], "reason": "일평균 40,509명 / 강남 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 222,800명"}, {"rank": 4, "name": "500번(석수역~을지로입구)", "type": "지선버스", "passengers": 32199, "reach": null, "total": 49.7, "biz": 14.4, "areas": ["광화문·종로", "을지로·명동"], "reason": "일평균 32,199명 / 광화문·종로 · 을지로·명동 경유 / 월 추정 도달 131,758명"}, {"rank": 5, "name": "5712번(가산동~홍대입구역)", "type": "간선버스", "passengers": 40454, "reach": null, "total": 48.9, "biz": 11.0, "areas": ["가산디지털단지", "홍대·합정"], "reason": "일평균 40,454명 / 가산디지털단지 · 홍대·합정 경유 / 월 추정 도달 137,058명"}, {"rank": 6, "name": "145번(번동~강남역)", "type": "지선버스", "passengers": 35671, "reach": null, "total": 47.9, "biz": 10.6, "areas": ["강남"], "reason": "일평균 35,671명 / 강남 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 196,190명"}, {"rank": 7, "name": "143번(정릉~개포동)", "type": "지선버스", "passengers": 70491, "reach": null, "total": 45.4, "biz": 0.0, "areas": [], "reason": "일평균 70,491명 고이용 노선 / 월 추정 도달 108,556명"}, {"rank": 8, "name": "3412번(강동공영차고지~강남역)", "type": "간선버스", "passengers": 18516, "reach": null, "total": 45.1, "biz": 15.9, "areas": ["강남", "강동·천호"], "reason": "일평균 18,516명 / 강남 · 강동·천호 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 81,470명"}, {"rank": 9, "name": "340번(강동차고지~무지개아파트)", "type": "지선버스", "passengers": 49484, "reach": null, "total": 44.2, "biz": 5.3, "areas": ["강동·천호"], "reason": "일평균 49,484명 / 강동·천호 경유 / 월 추정 도달 163,297명"}, {"rank": 10, "name": "506번(신림동~종로1가)", "type": "지선버스", "passengers": 27338, "reach": null, "total": 43.7, "biz": 12.3, "areas": ["광화문·종로", "신림"], "reason": "일평균 27,338명 / 광화문·종로 · 신림 경유 / 월 추정 도달 99,838명"}], "subway": [{"name": "2호선", "rank": 1, "passengers": 3451378, "total": 97.0, "mass": 98.9, "bizt": 95.7, "fni": 46.8, "reach": 17038763, "areas": ["강남", "건대입구", "광화문·종로", "구로디지털단지", "동대문", "망원·연남", "사당·이수", "성수", "신림", "신촌·이대", "영등포", "왕십리", "을지로·명동", "잠실", "홍대·합정"]}, {"name": "5호선", "rank": 2, "passengers": 1636562, "total": 76.4, "mass": 58.7, "bizt": 84.7, "fni": 44.3, "reach": 7791344, "areas": ["강동·천호", "광화문·종로", "동대문", "마곡", "신촌·이대", "여의도", "영등포", "왕십리", "을지로·명동", "잠실"]}, {"name": "7호선", "rank": 3, "passengers": 1475180, "total": 74.5, "mass": 55.3, "bizt": 83.6, "fni": 43.4, "reach": 6928920, "areas": ["가산디지털단지", "강남", "건대입구", "구로디지털단지", "노원", "사당·이수", "성수", "신촌·이대"]}, {"name": "4호선", "rank": 4, "passengers": 1284214, "total": 69.5, "mass": 51.4, "bizt": 77.4, "fni": 36.1, "reach": 6656338, "areas": ["남대문", "노원", "동대문", "사당·이수", "을지로·명동"]}, {"name": "9호선", "rank": 5, "passengers": 719141, "total": 62.1, "mass": 41.3, "bizt": 71.0, "fni": 49.0, "reach": 3183206, "areas": ["강남", "마곡", "사당·이수", "여의도", "영등포"]}, {"name": "1호선", "rank": 6, "passengers": 625986, "total": 58.7, "mass": 38.2, "bizt": 67.2, "fni": 36.6, "reach": 3181261, "areas": ["광화문·종로", "남대문", "동대문", "청량리"]}, {"name": "3호선", "rank": 7, "passengers": 1302303, "total": 58.4, "mass": 52.3, "bizt": 58.5, "fni": 37.0, "reach": 6131243, "areas": ["강남", "광화문·종로", "을지로·명동"]}, {"name": "6호선", "rank": 8, "passengers": 830636, "total": 57.0, "mass": 41.3, "bizt": 62.5, "fni": 61.8, "reach": 4325454, "areas": ["동대문", "망원·연남", "홍대·합정"]}, {"name": "경부선", "rank": 9, "passengers": 1104592, "total": 54.9, "mass": 47.0, "bizt": 55.7, "fni": 31.2, "reach": 5103215, "areas": ["가산디지털단지", "구로디지털단지", "남대문"]}, {"name": "분당선", "rank": 10, "passengers": 942464, "total": 52.0, "mass": 43.7, "bizt": 52.9, "fni": 46.6, "reach": 4271247, "areas": ["강남", "광화문·종로", "성수"]}, {"name": "경의선", "rank": 11, "passengers": 280586, "total": 50.8, "mass": 29.9, "bizt": 59.0, "fni": 45.7, "reach": 1452481, "areas": ["남대문", "신촌·이대", "홍대·합정"]}, {"name": "공항철도 1호선", "rank": 12, "passengers": 299808, "total": 48.6, "mass": 31.4, "bizt": 54.3, "fni": 58.7, "reach": 1446454, "areas": ["남대문", "마곡", "홍대·합정"]}, {"name": "경원선", "rank": 13, "passengers": 497352, "total": 38.9, "mass": 34.4, "bizt": 36.5, "fni": 46.8, "reach": 2429067, "areas": ["왕십리", "청량리"]}, {"name": "8호선", "rank": 14, "passengers": 520442, "total": 37.7, "mass": 34.3, "bizt": 34.5, "fni": 52.0, "reach": 2381543, "areas": ["강동·천호", "잠실"]}, {"name": "9호선2~3단계", "rank": 15, "passengers": 288922, "total": 35.3, "mass": 32.3, "bizt": 31.6, "fni": 49.8, "reach": 1245832, "areas": ["강남", "잠실"]}, {"name": "신림선", "rank": 16, "passengers": 114046, "total": 34.9, "mass": 26.4, "bizt": 34.5, "fni": 46.2, "reach": 536929, "areas": ["신림", "여의도"]}, {"name": "우이신설선", "rank": 17, "passengers": 111664, "total": 26.3, "mass": 25.7, "bizt": 20.4, "fni": 35.7, "reach": 604326, "areas": ["동대문"]}, {"name": "중앙선", "rank": 18, "passengers": 208212, "total": 25.7, "mass": 28.3, "bizt": 17.9, "fni": 53.4, "reach": 1016907, "areas": ["청량리"]}, {"name": "일산선", "rank": 19, "passengers": 287539, "total": 24.7, "mass": 30.0, "bizt": 15.4, "fni": 77.7, "reach": 1151306, "areas": ["마곡"]}, {"name": "수인선", "rank": 20, "passengers": 157522, "total": 23.8, "mass": 27.3, "bizt": 15.5, "fni": 45.3, "reach": 658442, "areas": ["강남"]}, {"name": "경인선", "rank": 21, "passengers": 641010, "total": 19.4, "mass": 37.4, "bizt": 2.2, "fni": 0.0, "reach": 987155, "areas": []}, {"name": "안산선", "rank": 22, "passengers": 292852, "total": 16.1, "mass": 30.1, "bizt": 1.0, "fni": 0.0, "reach": 450992, "areas": []}, {"name": "과천선", "rank": 23, "passengers": 289251, "total": 16.1, "mass": 30.0, "bizt": 1.0, "fni": 0.0, "reach": 445447, "areas": []}, {"name": "경강선", "rank": 24, "passengers": 85686, "total": 14.2, "mass": 25.8, "bizt": 0.2, "fni": 0.0, "reach": 131956, "areas": []}, {"name": "장항선", "rank": 25, "passengers": 47389, "total": 13.8, "mass": 25.0, "bizt": 0.1, "fni": 0.0, "reach": 72979, "areas": []}, {"name": "서해선", "rank": 26, "passengers": 27477, "total": 13.6, "mass": 24.6, "bizt": 0.0, "fni": 0.0, "reach": 42315, "areas": []}, {"name": "경춘선", "rank": 27, "passengers": 96883, "total": 13.1, "mass": 22.6, "bizt": 0.2, "fni": 0.0, "reach": 149200, "areas": []}], "mix": [{"rank": 1, "name": "2호선", "media": "subway", "total": 97.0, "cost": 4000000, "reach": 17038763, "newAreas": 15, "areas": ["강남", "건대입구", "광화문·종로", "구로디지털단지", "동대문", "망원·연남", "사당·이수", "성수", "신림", "신촌·이대", "영등포", "왕십리", "을지로·명동", "잠실", "홍대·합정"]}, {"rank": 2, "name": "146번(상계주공7단지~강남역)", "media": "bus", "total": 57.4, "cost": 2500000, "reach": 193809, "newAreas": 1, "areas": ["강남", "노원"]}, {"rank": 3, "name": "540번(군포공영차고지~강남성모병원)", "media": "bus", "total": 50.9, "cost": 2500000, "reach": 131578, "newAreas": 0, "areas": ["강남", "사당·이수"]}, {"rank": 4, "name": "643번(양천차고지~강남역)", "media": "bus", "total": 50.1, "cost": 2500000, "reach": 222800, "newAreas": 0, "areas": ["강남"]}, {"rank": 5, "name": "500번(석수역~을지로입구)", "media": "bus", "total": 49.7, "cost": 2500000, "reach": 131758, "newAreas": 0, "areas": ["광화문·종로", "을지로·명동"]}, {"rank": 6, "name": "5712번(가산동~홍대입구역)", "media": "bus", "total": 48.9, "cost": 2500000, "reach": 137058, "newAreas": 1, "areas": ["가산디지털단지", "홍대·합정"]}, {"rank": 7, "name": "145번(번동~강남역)", "media": "bus", "total": 47.9, "cost": 2500000, "reach": 196190, "newAreas": 0, "areas": ["강남"]}, {"rank": 8, "name": "5호선", "media": "subway", "total": 76.4, "cost": 4000000, "reach": 7791344, "newAreas": 3, "areas": ["강동·천호", "광화문·종로", "동대문", "마곡", "신촌·이대", "여의도", "영등포", "왕십리", "을지로·명동", "잠실"]}, {"rank": 9, "name": "7호선", "media": "subway", "total": 74.5, "cost": 4000000, "reach": 6928920, "newAreas": 0, "areas": ["가산디지털단지", "강남", "건대입구", "구로디지털단지", "노원", "사당·이수", "성수", "신촌·이대"]}, {"rank": 10, "name": "143번(정릉~개포동)", "media": "bus", "total": 45.4, "cost": 2500000, "reach": 108556, "newAreas": 0, "areas": []}, {"rank": 11, "name": "3412번(강동공영차고지~강남역)", "media": "bus", "total": 45.1, "cost": 2500000, "reach": 81470, "newAreas": 0, "areas": ["강남", "강동·천호"]}, {"rank": 12, "name": "340번(강동차고지~무지개아파트)", "media": "bus", "total": 44.2, "cost": 2500000, "reach": 163297, "newAreas": 0, "areas": ["강동·천호"]}, {"rank": 13, "name": "506번(신림동~종로1가)", "media": "bus", "total": 43.7, "cost": 2500000, "reach": 99838, "newAreas": 0, "areas": ["광화문·종로", "신림"]}, {"rank": 14, "name": "4호선", "media": "subway", "total": 69.5, "cost": 4000000, "reach": 6656338, "newAreas": 1, "areas": ["남대문", "노원", "동대문", "사당·이수", "을지로·명동"]}, {"rank": 15, "name": "463(염곡동~국회의사당)", "media": "bus", "total": 42.6, "cost": 2500000, "reach": 96930, "newAreas": 0, "areas": ["사당·이수", "여의도"]}, {"rank": 16, "name": "402번(장지공영차고지~시청)", "media": "bus", "total": 42.0, "cost": 2500000, "reach": 156537, "newAreas": 0, "areas": ["광화문·종로"]}, {"rank": 17, "name": "600번(온수동~광화문)", "media": "bus", "total": 41.5, "cost": 2500000, "reach": 148051, "newAreas": 0, "areas": ["광화문·종로"]}], "coverage": [{"name": "신림", "index": 5.0, "covered": true, "routeCount": 2, "routes": "2호선,506번(신림동~종로1가)", "priority": "tier1"}, {"name": "동대문", "index": 4.9, "covered": true, "routeCount": 3, "routes": "2호선,5호선,4호선", "priority": "tier1"}, {"name": "남대문", "index": 4.9, "covered": true, "routeCount": 1, "routes": "4호선", "priority": "tier1"}, {"name": "건대입구", "index": 4.8, "covered": true, "routeCount": 2, "routes": "2호선,7호선", "priority": "tier1"}, {"name": "을지로·명동", "index": 4.8, "covered": true, "routeCount": 4, "routes": "2호선,500번(석수역~을지로입구),5호선,4호선", "priority": "tier1"}, {"name": "영등포", "index": 4.7, "covered": true, "routeCount": 2, "routes": "2호선,5호선", "priority": "tier1"}, {"name": "망원·연남", "index": 4.6, "covered": true, "routeCount": 1, "routes": "2호선", "priority": "tier1"}, {"name": "홍대·합정", "index": 4.5, "covered": true, "routeCount": 2, "routes": "2호선,5712번(가산동~홍대입구역)", "priority": "tier1"}, {"name": "신촌·이대", "index": 4.5, "covered": true, "routeCount": 3, "routes": "2호선,5호선,7호선", "priority": "tier1"}, {"name": "노원", "index": 4.4, "covered": true, "routeCount": 3, "routes": "146번(상계주공7단지~강남역),7호선,4호선", "priority": "tier2"}, {"name": "왕십리", "index": 4.3, "covered": true, "routeCount": 2, "routes": "2호선,5호선", "priority": "tier2"}, {"name": "청량리", "index": 4.3, "covered": false, "routeCount": 0, "routes": "", "priority": "tier2"}, {"name": "성수", "index": 4.2, "covered": true, "routeCount": 2, "routes": "2호선,7호선", "priority": "tier2"}, {"name": "사당·이수", "index": 4.2, "covered": true, "routeCount": 5, "routes": "2호선,540번(군포공영차고지~강남성모병원),7호선,4호선,463(염곡동~국회의사당)", "priority": "tier2"}, {"name": "강동·천호", "index": 4.1, "covered": true, "routeCount": 3, "routes": "5호선,3412번(강동공영차고지~강남역),340번(강동차고지~무지개아파트)", "priority": "tier2"}, {"name": "광화문·종로", "index": 4.0, "covered": true, "routeCount": 6, "routes": "2호선,500번(석수역~을지로입구),5호선,506번(신림동~종로1가),402번(장지공영차고지~시청)", "priority": "tier2"}, {"name": "잠실", "index": 3.8, "covered": true, "routeCount": 2, "routes": "2호선,5호선", "priority": "tier2"}, {"name": "구로디지털단지", "index": 3.6, "covered": true, "routeCount": 2, "routes": "2호선,7호선", "priority": "tier2"}, {"name": "강남", "index": 3.5, "covered": true, "routeCount": 7, "routes": "2호선,146번(상계주공7단지~강남역),540번(군포공영차고지~강남성모병원),643번(양천차고지~강남역),145번(번동~강남역)", "priority": "tier2"}, {"name": "가산디지털단지", "index": 3.5, "covered": true, "routeCount": 2, "routes": "5712번(가산동~홍대입구역),7호선", "priority": "tier2"}, {"name": "마곡", "index": 3.3, "covered": true, "routeCount": 1, "routes": "5호선", "priority": "tier2"}, {"name": "여의도", "index": 3.2, "covered": true, "routeCount": 2, "routes": "5호선,463(염곡동~국회의사당)", "priority": "tier2"}], "gap": [{"rank": 1, "media": "SUBWAY", "name": "1호선", "area": "청량리", "score": "58.7"}, {"rank": 2, "media": "BUS", "name": "1224번(상계동~청량리)", "area": "청량리", "score": "40.9"}, {"rank": 3, "media": "BUS", "name": "420번(개포동~답십리역)", "area": "청량리", "score": "39.2"}, {"rank": 4, "media": "SUBWAY", "name": "경원선", "area": "청량리", "score": "38.9"}, {"rank": 5, "media": "BUS", "name": "120번(우이동~청량리)", "area": "청량리", "score": "38.6"}, {"rank": 6, "media": "BUS", "name": "720번(기자촌~답십리)", "area": "청량리", "score": "37.4"}, {"rank": 7, "media": "BUS", "name": "동대문01(회기역~경희의료원)", "area": "청량리", "score": "34.2"}, {"rank": 8, "media": "BUS", "name": "2211번(면목동~회기역)", "area": "청량리", "score": "34.2"}, {"rank": 9, "media": "BUS", "name": "동대문03(서울가든아파트~회기역)", "area": "청량리", "score": "31.8"}, {"rank": 10, "media": "BUS", "name": "동대문05(답십리역~영휘원사거리)", "area": "청량리", "score": "31.1"}], "segments": [{"label": "30대 창업 초기 자영업자", "bus": [{"rank": 1, "name": "금천03(가산디지털단지역~구로디지털단지역)", "score": 53.6, "areas": ["가산디지털단지 · 구로디지털단지"]}, {"rank": 2, "name": "500번(석수역~을지로입구)", "score": 53.0, "areas": ["광화문·종로 · 을지로·명동"]}, {"rank": 3, "name": "6512번(구로동~서울대)", "score": 52.8, "areas": ["구로디지털단지"]}, {"rank": 4, "name": "121번(화계사~서울숲)", "score": 52.1, "areas": ["성수"]}, {"rank": 5, "name": "5618번(구로동~구로동)", "score": 52.1, "areas": ["구로디지털단지"]}], "subway": [{"rank": 1, "name": "2호선", "score": 77.6, "areas": ["강남 · 건대입구 · 광화문·종로 · 구로디지털단지 · 동대문 · 망원·연남 · 사당·이수 · 성수 · 신림 · 신촌·이대 · 영등포 · 왕십리 · 을지로·명동 · 잠실 · 홍대·합정"]}, {"rank": 2, "name": "7호선", "score": 66.4, "areas": ["가산디지털단지 · 강남 · 건대입구 · 구로디지털단지 · 노원 · 사당·이수 · 성수 · 신촌·이대"]}, {"rank": 3, "name": "5호선", "score": 62.6, "areas": ["강동·천호 · 광화문·종로 · 동대문 · 마곡 · 신촌·이대 · 여의도 · 영등포 · 왕십리 · 을지로·명동 · 잠실"]}, {"rank": 4, "name": "경부선", "score": 60.4, "areas": ["가산디지털단지 · 구로디지털단지 · 남대문"]}, {"rank": 5, "name": "4호선", "score": 57.2, "areas": ["남대문 · 노원 · 동대문 · 사당·이수 · 을지로·명동"]}], "area": [{"rank": 1, "name": "구로디지털단지", "score": 84.8, "areas": []}, {"rank": 2, "name": "성수", "score": 82.7, "areas": []}, {"rank": 3, "name": "광화문·종로", "score": 62.1, "areas": []}, {"rank": 4, "name": "가산디지털단지", "score": 61.7, "areas": []}, {"rank": 5, "name": "마곡", "score": 59.5, "areas": []}]}, {"label": "40대 안정 영업 업주", "bus": [{"rank": 1, "name": "146번(상계주공7단지~강남역)", "score": 60.4, "areas": ["강남 · 노원"]}, {"rank": 2, "name": "1224번(상계동~청량리)", "score": 56.9, "areas": ["노원 · 청량리"]}, {"rank": 3, "name": "500번(석수역~을지로입구)", "score": 55.1, "areas": ["광화문·종로 · 을지로·명동"]}, {"rank": 4, "name": "420번(개포동~답십리역)", "score": 55.0, "areas": ["청량리"]}, {"rank": 5, "name": "120번(우이동~청량리)", "score": 54.7, "areas": ["청량리"]}], "subway": [{"rank": 1, "name": "2호선", "score": 76.3, "areas": ["강남 · 건대입구 · 광화문·종로 · 구로디지털단지 · 동대문 · 망원·연남 · 사당·이수 · 성수 · 신림 · 신촌·이대 · 영등포 · 왕십리 · 을지로·명동 · 잠실 · 홍대·합정"]}, {"rank": 2, "name": "4호선", "score": 68.5, "areas": ["남대문 · 노원 · 동대문 · 사당·이수 · 을지로·명동"]}, {"rank": 3, "name": "5호선", "score": 67.7, "areas": ["강동·천호 · 광화문·종로 · 동대문 · 마곡 · 신촌·이대 · 여의도 · 영등포 · 왕십리 · 을지로·명동 · 잠실"]}, {"rank": 4, "name": "7호선", "score": 64.2, "areas": ["가산디지털단지 · 강남 · 건대입구 · 구로디지털단지 · 노원 · 사당·이수 · 성수 · 신촌·이대"]}, {"rank": 5, "name": "1호선", "score": 64.1, "areas": ["광화문·종로 · 남대문 · 동대문 · 청량리"]}], "area": [{"rank": 1, "name": "마곡", "score": 85.2, "areas": []}, {"rank": 2, "name": "노원", "score": 83.3, "areas": []}, {"rank": 3, "name": "청량리", "score": 78.8, "areas": []}, {"rank": 4, "name": "남대문", "score": 78.8, "areas": []}, {"rank": 5, "name": "동대문", "score": 71.7, "areas": []}]}, {"label": "50대 전통 업종 업주", "bus": [{"rank": 1, "name": "146번(상계주공7단지~강남역)", "score": 61.3, "areas": ["강남 · 노원"]}, {"rank": 2, "name": "643번(양천차고지~강남역)", "score": 56.0, "areas": ["강남"]}, {"rank": 3, "name": "145번(번동~강남역)", "score": 54.6, "areas": ["강남"]}, {"rank": 4, "name": "420번(개포동~답십리역)", "score": 54.4, "areas": ["청량리"]}, {"rank": 5, "name": "120번(우이동~청량리)", "score": 54.0, "areas": ["청량리"]}], "subway": [{"rank": 1, "name": "2호선", "score": 75.0, "areas": ["강남 · 건대입구 · 광화문·종로 · 구로디지털단지 · 동대문 · 망원·연남 · 사당·이수 · 성수 · 신림 · 신촌·이대 · 영등포 · 왕십리 · 을지로·명동 · 잠실 · 홍대·합정"]}, {"rank": 2, "name": "4호선", "score": 63.5, "areas": ["남대문 · 노원 · 동대문 · 사당·이수 · 을지로·명동"]}, {"rank": 3, "name": "5호선", "score": 63.4, "areas": ["강동·천호 · 광화문·종로 · 동대문 · 마곡 · 신촌·이대 · 여의도 · 영등포 · 왕십리 · 을지로·명동 · 잠실"]}, {"rank": 4, "name": "7호선", "score": 63.0, "areas": ["가산디지털단지 · 강남 · 건대입구 · 구로디지털단지 · 노원 · 사당·이수 · 성수 · 신촌·이대"]}, {"rank": 5, "name": "9호선", "score": 58.7, "areas": ["강남 · 마곡 · 사당·이수 · 여의도 · 영등포"]}], "area": [{"rank": 1, "name": "청량리", "score": 77.1, "areas": []}, {"rank": 2, "name": "영등포", "score": 76.7, "areas": []}, {"rank": 3, "name": "노원", "score": 69.8, "areas": []}, {"rank": 4, "name": "강남", "score": 64.8, "areas": []}, {"rank": 5, "name": "동대문", "score": 59.9, "areas": []}]}, {"label": "음식점·카페 업주", "bus": [{"rank": 1, "name": "5712번(가산동~홍대입구역)", "score": 57.0, "areas": ["가산디지털단지 · 홍대·합정"]}, {"rank": 2, "name": "360번(송파차고지~여의도)", "score": 56.0, "areas": ["여의도"]}, {"rank": 3, "name": "146번(상계주공7단지~강남역)", "score": 56.0, "areas": ["강남 · 노원"]}, {"rank": 4, "name": "500번(석수역~을지로입구)", "score": 55.7, "areas": ["광화문·종로 · 을지로·명동"]}, {"rank": 5, "name": "금천03(가산디지털단지역~구로디지털단지역)", "score": 54.8, "areas": ["가산디지털단지 · 구로디지털단지"]}], "subway": [{"rank": 1, "name": "2호선", "score": 81.9, "areas": ["강남 · 건대입구 · 광화문·종로 · 구로디지털단지 · 동대문 · 망원·연남 · 사당·이수 · 성수 · 신림 · 신촌·이대 · 영등포 · 왕십리 · 을지로·명동 · 잠실 · 홍대·합정"]}, {"rank": 2, "name": "7호선", "score": 69.2, "areas": ["가산디지털단지 · 강남 · 건대입구 · 구로디지털단지 · 노원 · 사당·이수 · 성수 · 신촌·이대"]}, {"rank": 3, "name": "5호선", "score": 66.8, "areas": ["강동·천호 · 광화문·종로 · 동대문 · 마곡 · 신촌·이대 · 여의도 · 영등포 · 왕십리 · 을지로·명동 · 잠실"]}, {"rank": 4, "name": "4호선", "score": 63.6, "areas": ["남대문 · 노원 · 동대문 · 사당·이수 · 을지로·명동"]}, {"rank": 5, "name": "경부선", "score": 63.5, "areas": ["가산디지털단지 · 구로디지털단지 · 남대문"]}], "area": [{"rank": 1, "name": "구로디지털단지", "score": 82.5, "areas": []}, {"rank": 2, "name": "여의도", "score": 79.2, "areas": []}, {"rank": 3, "name": "성수", "score": 78.7, "areas": []}, {"rank": 4, "name": "남대문", "score": 77.4, "areas": []}, {"rank": 5, "name": "가산디지털단지", "score": 69.4, "areas": []}]}, {"label": "소상공인 전반 (전체 타겟)", "bus": [{"rank": 1, "name": "146번(상계주공7단지~강남역)", "score": 65.9, "areas": ["강남 · 노원"]}, {"rank": 2, "name": "643번(양천차고지~강남역)", "score": 63.6, "areas": ["강남"]}, {"rank": 3, "name": "145번(번동~강남역)", "score": 62.2, "areas": ["강남"]}, {"rank": 4, "name": "420번(개포동~답십리역)", "score": 59.4, "areas": ["청량리"]}, {"rank": 5, "name": "360번(송파차고지~여의도)", "score": 59.0, "areas": ["여의도"]}], "subway": [{"rank": 1, "name": "2호선", "score": 79.3, "areas": ["강남 · 건대입구 · 광화문·종로 · 구로디지털단지 · 동대문 · 망원·연남 · 사당·이수 · 성수 · 신림 · 신촌·이대 · 영등포 · 왕십리 · 을지로·명동 · 잠실 · 홍대·합정"]}, {"rank": 2, "name": "7호선", "score": 70.5, "areas": ["가산디지털단지 · 강남 · 건대입구 · 구로디지털단지 · 노원 · 사당·이수 · 성수 · 신촌·이대"]}, {"rank": 3, "name": "5호선", "score": 68.7, "areas": ["강동·천호 · 광화문·종로 · 동대문 · 마곡 · 신촌·이대 · 여의도 · 영등포 · 왕십리 · 을지로·명동 · 잠실"]}, {"rank": 4, "name": "4호선", "score": 67.9, "areas": ["남대문 · 노원 · 동대문 · 사당·이수 · 을지로·명동"]}, {"rank": 5, "name": "1호선", "score": 66.1, "areas": ["광화문·종로 · 남대문 · 동대문 · 청량리"]}], "area": [{"rank": 1, "name": "구로디지털단지", "score": 90.8, "areas": []}, {"rank": 2, "name": "청량리", "score": 89.5, "areas": []}, {"rank": 3, "name": "남대문", "score": 88.3, "areas": []}, {"rank": 4, "name": "여의도", "score": 86.8, "areas": []}, {"rank": 5, "name": "강남", "score": 83.8, "areas": []}]}], "realtime": [{"name": "여의도", "congest": "약간 붐빔", "pmin": 165000, "pmax": 170000, "resident": 65.2, "personal": 92.8, "corp": 7.2, "food": 79.6, "p3050": 70.8}, {"name": "을지로·명동", "congest": "보통", "pmin": 98000, "pmax": 100000, "resident": 59.9, "personal": 77.1, "corp": 22.9, "food": 65.8, "p3050": 71.4}, {"name": "강남", "congest": "약간 붐빔", "pmin": 78000, "pmax": 80000, "resident": 58.7, "personal": 99.7, "corp": 0.3, "food": 46.4, "p3050": 63.7}, {"name": "홍대·합정", "congest": "여유", "pmin": 58000, "pmax": 60000, "resident": 54.9, "personal": 95.8, "corp": 4.2, "food": 77.2, "p3050": 53.7}, {"name": "광화문·종로", "congest": "약간 붐빔", "pmin": 48000, "pmax": 50000, "resident": 50.7, "personal": 70.2, "corp": 29.8, "food": 76.3, "p3050": 70.5}, {"name": "가산디지털단지", "congest": "보통", "pmin": 36000, "pmax": 38000, "resident": 42.0, "personal": 67.0, "corp": 33.0, "food": 81.8, "p3050": 70.7}, {"name": "성수", "congest": "보통", "pmin": 32000, "pmax": 34000, "resident": 58.3, "personal": 89.6, "corp": 10.4, "food": 88.9, "p3050": 61.9}, {"name": "구로디지털단지", "congest": "약간 붐빔", "pmin": 32000, "pmax": 34000, "resident": 50.7, "personal": 99.8, "corp": 0.2, "food": 79.7, "p3050": 70.3}, {"name": "신촌·이대", "congest": "약간 붐빔", "pmin": 25000, "pmax": 30000, "resident": 38.0, "personal": 95.5, "corp": 0.0, "food": 45.0, "p3050": 58.0}, {"name": "건대입구", "congest": "여유", "pmin": 24000, "pmax": 26000, "resident": 56.8, "personal": 96.7, "corp": 3.3, "food": 66.5, "p3050": 45.5}, {"name": "잠실", "congest": "보통", "pmin": 22000, "pmax": 24000, "resident": 23.4, "personal": 97.2, "corp": 2.8, "food": 60.4, "p3050": 52.3}, {"name": "노원", "congest": "보통", "pmin": 18000, "pmax": 24000, "resident": 55.0, "personal": 97.2, "corp": 0.0, "food": 38.0, "p3050": 70.0}, {"name": "청량리", "congest": "약간 붐빔", "pmin": 16000, "pmax": 22000, "resident": 48.0, "personal": 96.8, "corp": 0.0, "food": 42.0, "p3050": 71.0}, {"name": "남대문", "congest": "약간 붐빔", "pmin": 18000, "pmax": 20000, "resident": 58.1, "personal": 99.4, "corp": 0.6, "food": 77.8, "p3050": 68.2}, {"name": "왕십리", "congest": "여유", "pmin": 16000, "pmax": 18000, "resident": 60.3, "personal": 53.6, "corp": 46.4, "food": 83.5, "p3050": 40.8}, {"name": "마곡", "congest": "보통", "pmin": 12000, "pmax": 18000, "resident": 32.0, "personal": 84.0, "corp": 0.0, "food": 28.0, "p3050": 79.0}, {"name": "영등포", "congest": "여유", "pmin": 12000, "pmax": 14000, "resident": 33.8, "personal": 97.0, "corp": 3.0, "food": 42.0, "p3050": 59.5}, {"name": "사당·이수", "congest": "여유", "pmin": 10000, "pmax": 12000, "resident": 26.2, "personal": 100.0, "corp": 0.0, "food": 41.7, "p3050": 54.6}, {"name": "신림", "congest": "여유", "pmin": 8000, "pmax": 8500, "resident": 24.6, "personal": 99.9, "corp": 0.1, "food": 63.3, "p3050": 53.3}, {"name": "동대문", "congest": "보통", "pmin": 8000, "pmax": 8500, "resident": 17.0, "personal": 100.0, "corp": 0.0, "food": 34.5, "p3050": 54.5}, {"name": "망원·연남", "congest": "여유", "pmin": 7500, "pmax": 8000, "resident": 48.7, "personal": 71.2, "corp": 28.8, "food": 92.3, "p3050": 53.4}, {"name": "강동·천호", "congest": "여유", "pmin": 7500, "pmax": 8000, "resident": 20.1, "personal": 94.7, "corp": 5.3, "food": 16.4, "p3050": 53.9}], "strategy": {"A": [{"name": "146번(상계주공7단지~강남역)", "reason": "일평균 46,859명 / 강남 · 노원 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 193,809명"}, {"name": "540번(군포공영차고지~강남성모병원)", "reason": "일평균 31,478명 / 강남 · 사당·이수 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 131,578명"}, {"name": "643번(양천차고지~강남역)", "reason": "일평균 40,509명 / 강남 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 222,800명"}], "B": [{"name": "500번(석수역~을지로입구)", "reason": "일평균 32,199명 / 광화문·종로 · 을지로·명동 경유 / 월 추정 도달 131,758명"}, {"name": "5712번(가산동~홍대입구역)", "reason": "일평균 40,454명 / 가산디지털단지 · 홍대·합정 경유 / 월 추정 도달 137,058명"}, {"name": "145번(번동~강남역)", "reason": "일평균 35,671명 / 강남 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 196,190명"}], "C": [{"name": "143번(정릉~개포동)", "reason": "일평균 70,491명 고이용 노선 / 월 추정 도달 108,556명"}, {"name": "3412번(강동공영차고지~강남역)", "reason": "일평균 18,516명 / 강남 · 강동·천호 경유 / 소상공인/자영업자 밀집 지역 1곳 포함 / 월 추정 도달 81,470명"}, {"name": "340번(강동차고지~무지개아파트)", "reason": "일평균 49,484명 / 강동·천호 경유 / 월 추정 도달 163,297명"}, {"name": "506번(신림동~종로1가)", "reason": "일평균 27,338명 / 광화문·종로 · 신림 경유 / 월 추정 도달 99,838명"}]}, "nextActions": ["집행 전 검증: A급 3개 노선에 광고 집행 → 앱 설치 전환율 측정", "A/B 테스트: 상위 5개 노선 중 3개 선발, 1개월 집행 후 비교", "지역 집중 전략: TOP 5 지역을 통과하는 노선을 우선 선정", "비용 보정: 실제 광고 단가 확인 후 (총점 / 단가) ROAS 비율로 최종 포트폴리오 확정"]};
 const won = n => n>=100000000 ? (n/100000000).toFixed(n%100000000?1:0)+'억' :
   n>=10000 ? Math.round(n/10000).toLocaleString()+'만' : n.toLocaleString();
-const comma = n => n.toLocaleString();
+const comma = n => (n==null?'—':n.toLocaleString());
 const QCOLOR = {'최우선공략':'#2d5bff','신흥기회(화이트스페이스)':'#1fa971','안정고착(함정)':'#e8a32b','후순위':'#9aa0ad'};
+const mediaPill = m => `<span class="pill ${m}">${m==='bus'?'버스':'지하철'}</span>`;
 
-/* ---- nav ---- */
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#nav button').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');
@@ -227,135 +255,125 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
   if(b.dataset.s==='fni') drawScatter();
 });
 
-/* ---- KPIs ---- */
-const mix = DATA.mix;
-const cost = mix.reduce((a,m)=>a+m.cost,0);
-const reach = mix.reduce((a,m)=>a+m.reach,0);
-const covered = DATA.coverage.filter(c=>c.covered).length;
-const kpis = [
-  ['타겟 상권', DATA.fni.length, '개'],
-  ['추천 노선', mix.length, '개'],
-  ['월 광고예산', won(cost), '원'],
-  ['월 추정도달', won(reach), '명'],
-];
-document.getElementById('kpis').innerHTML = kpis.map(k=>
-  `<div class="kpi"><div class="v">${k[1]}<small>${k[2]}</small></div><div class="l">${k[0]}</div></div>`).join('');
-document.getElementById('metaLine').textContent =
-  `버스 ${mix.filter(m=>m.media==='bus').length}개 · 지하철 ${mix.filter(m=>m.media==='subway').length}개 호선 · 22개 상권 중 ${covered}개 커버`;
-document.getElementById('mixDesc').textContent =
-  `총 ${mix.length}개 노선 · 월 ${comma(cost)}원 · 월 추정도달 ${comma(reach)}명`;
-document.getElementById('covDesc').textContent =
-  `22개 타겟 상권 중 ${covered}개 커버 (${(covered/DATA.fni.length*100).toFixed(0)}%) · 미커버 상권은 추가 노선 후보로 관리`;
+/* KPIs */
+const mix=DATA.mix, cost=mix.reduce((a,m)=>a+m.cost,0), reach=mix.reduce((a,m)=>a+m.reach,0);
+const covered=DATA.coverage.filter(c=>c.covered).length;
+[['타겟 상권',DATA.fni.length,'개'],['추천 노선',mix.length,'개'],['월 광고예산',won(cost),'원'],['월 추정도달',won(reach),'명']]
+ .forEach(()=>{});
+document.getElementById('kpis').innerHTML=[['타겟 상권',DATA.fni.length,'개'],['추천 노선',mix.length,'개'],['월 광고예산',won(cost),'원'],['월 추정도달',won(reach),'명']]
+  .map(k=>`<div class="kpi"><div class="v">${k[1]}<small>${k[2]}</small></div><div class="l">${k[0]}</div></div>`).join('');
+document.getElementById('metaLine').textContent=`버스 ${mix.filter(m=>m.media==='bus').length}개 · 지하철 ${mix.filter(m=>m.media==='subway').length}개 호선 · 22개 상권 중 ${covered}개 커버`;
+document.getElementById('mixDesc').textContent=`총 ${mix.length}개 노선 · 월 ${comma(cost)}원 · 월 추정도달 ${comma(reach)}명`;
+document.getElementById('covDesc').textContent=`22개 타겟 상권 중 ${covered}개 커버 (${(covered/DATA.fni.length*100).toFixed(0)}%) · 미커버 상권은 추가 노선 후보로 관리`;
 
-/* ---- mix mini (overview, top 8) ---- */
-const mediaPill = m => `<span class="pill ${m}">${m==='bus'?'버스':'지하철'}</span>`;
-document.getElementById('mixMini').innerHTML = mix.slice(0,8).map(m=>
-  `<tr><td>${mediaPill(m.media)}</td><td><b>${m.name}</b></td>
-   <td class="r"><b>${m.total}</b></td><td class="r hide-sm">${comma(m.cost)}</td>
-   <td class="r">${comma(m.reach)}</td></tr>`).join('');
-
-/* ---- mix full ---- */
-document.getElementById('mixFull').innerHTML = mix.map(m=>
-  `<tr><td><span class="rank${m.rank<=3?' top':''}">${m.rank}</span></td>
-   <td>${mediaPill(m.media)}</td><td><b>${m.name}</b></td>
-   <td class="r">${m.total}</td><td class="r hide-sm">${comma(m.cost)}</td>
+/* mix */
+document.getElementById('mixMini').innerHTML=mix.slice(0,8).map(m=>
+  `<tr><td>${mediaPill(m.media)}</td><td><b>${m.name}</b></td><td class="r"><b>${m.total}</b></td>
+   <td class="r">${comma(m.cost)}</td><td class="r">${comma(m.reach)}</td></tr>`).join('');
+document.getElementById('mixFull').innerHTML=mix.map(m=>
+  `<tr><td><span class="rank${m.rank<=3?' top':''}">${m.rank}</span></td><td>${mediaPill(m.media)}</td>
+   <td><b>${m.name}</b></td><td class="r">${m.total}</td><td class="r">${comma(m.cost)}</td>
    <td class="r">${comma(m.reach)}</td>
-   <td class="hide-sm">${m.newAreas>0?`<span class="tag">+${m.newAreas}개 상권</span>`:'<span class="reason">중복</span>'}</td></tr>`).join('');
+   <td>${m.newAreas>0?`<span class="tag">+${m.newAreas}개 상권</span>`:'<span class="reason">중복</span>'}</td></tr>`).join('');
 
-/* ---- regions ---- */
-const maxR = Math.max(...DATA.regions.map(r=>r.total));
-document.getElementById('regionTbl').innerHTML = DATA.regions.map(r=>
-  `<tr><td><span class="rank${r.rank<=3?' top':''}">${r.rank}</span></td>
-   <td><b>${r.name}</b></td>
-   <td class="r"><span class="barbg"><span class="bar" style="width:${r.total/maxR*70}px"></span></span><b>${r.total}</b></td>
-   <td class="r hide-sm">${r.routes}</td>
-   <td class="reason">${r.reason}</td></tr>`).join('');
+/* regions */
+const maxR=Math.max(...DATA.regions.map(r=>r.total));
+document.getElementById('regionTbl').innerHTML=DATA.regions.map(r=>
+  `<tr><td><span class="rank${r.rank<=3?' top':''}">${r.rank}</span></td><td><b>${r.name}</b></td>
+   <td class="r"><span class="barbg"><span class="bar" style="width:${r.total/maxR*55}px"></span></span><b>${r.total}</b></td>
+   <td class="r">${r.store}</td><td class="r">${r.livelihood}</td><td class="r">${r.population}</td>
+   <td class="r">${r.access}</td><td class="r">${r.finance}</td><td class="r">${r.routes}</td></tr>`).join('');
+document.getElementById('rtTbl').innerHTML=DATA.realtime.map(r=>
+  `<tr><td><b>${r.name}</b></td><td>${r.congest}</td>
+   <td class="r">${comma(r.pmin)}~${comma(r.pmax)}명</td><td class="r">${r.resident}%</td>
+   <td class="r">${r.personal}/${r.corp}</td><td class="r">${r.p3050}%</td><td class="r">${r.food}%</td></tr>`).join('');
 
-/* ---- bus ---- */
-document.getElementById('busTbl').innerHTML = DATA.bus.map(b=>
+/* bus / subway */
+document.getElementById('busTbl').innerHTML=DATA.bus.map(b=>
   `<tr><td><span class="rank${b.rank<=3?' top':''}">${b.rank}</span></td>
    <td><b>${b.name.replace(/\(.*\)/,'')}</b><br><span class="reason">${b.type}</span></td>
    <td class="r"><b>${b.total}</b></td>
-   <td>${b.areas.map(a=>`<span class="tag">${a}</span>`).join('')||'<span class="reason">—</span>'}</td></tr>`).join('');
+   <td class="wrap-c">${b.areas.map(a=>`<span class="tag">${a}</span>`).join('')||'<span class="reason">—</span>'}</td></tr>`).join('');
+document.getElementById('subTbl').innerHTML=DATA.subway.slice(0,14).map(s=>
+  `<tr><td><b>${s.name}</b></td><td class="r">${s.mass}</td><td class="r"><b>${s.bizt}</b></td><td class="r">${s.fni}</td></tr>`).join('');
 
-/* ---- subway ---- */
-document.getElementById('subTbl').innerHTML = DATA.subway.slice(0,14).map(s=>
-  `<tr><td><b>${s.name}</b></td><td class="r">${s.mass}</td>
-   <td class="r"><b>${s.bizt}</b></td><td class="r">${s.fni}</td></tr>`).join('');
-
-/* ---- fni table ---- */
-document.getElementById('fniTbl').innerHTML = DATA.fni.slice().sort((a,b)=>b.fni-a.fni).map(f=>
-  `<tr><td><b>${f.name}</b></td><td class="r">${f.density}</td>
+/* fni table (5축) */
+const fmax={f_new:25,f_close:25,f_dyn:15,f_self:15,f_mom:30};
+document.getElementById('fniTbl').innerHTML=DATA.fni.slice().sort((a,b)=>b.fni-a.fni).map(f=>
+  `<tr><td><b>${f.name}</b></td>
    <td class="r"><b style="color:${QCOLOR[f.quadrant]||'#888'}">${f.fni}</b></td>
-   <td><span class="tag" style="background:${(QCOLOR[f.quadrant]||'#888')}18;color:${QCOLOR[f.quadrant]||'#888'}">${(f.quadrant||'').replace(/\(.*\)/,'')}</span></td>
-   <td class="hide-sm reason">${f.copy}</td></tr>`).join('');
+   <td class="r">${f.f_new}</td><td class="r">${f.f_close}</td><td class="r">${f.f_dyn}</td>
+   <td class="r">${f.f_self}</td><td class="r">${f.f_mom}</td>
+   <td><span class="tag" style="background:${(QCOLOR[f.quadrant]||'#888')}18;color:${QCOLOR[f.quadrant]||'#888'}">${(f.quadrant||'').replace(/\(.*\)/,'')}</span></td></tr>`).join('');
 
-/* ---- coverage table ---- */
-document.getElementById('covTbl').innerHTML = DATA.coverage.map(c=>
+/* segments */
+document.getElementById('segWrap').innerHTML=DATA.segments.map(s=>{
+  const col=(title,arr)=>`<div class="seg-col"><h4>${title}</h4>${
+    arr.map(it=>`<div class="seg-item"><b>${it.rank}</b><span>${it.name}<br><span class="reason">${it.score}점</span></span></div>`).join('')||'<div class="reason">—</div>'}</div>`;
+  return `<div class="card"><div class="seg-title">${s.label}</div>
+    <div class="seg-grid">${col('📍 지역',s.area)}${col('🚌 버스',s.bus)}${col('🚇 지하철',s.subway)}</div></div>`;
+}).join('');
+
+/* coverage */
+document.getElementById('covTbl').innerHTML=DATA.coverage.map(c=>
   `<tr><td><b>${c.name}</b></td><td class="r">${c.index}</td>
    <td><span class="cov"><i class="${c.covered?'y':'n'}"></i>${c.covered?'커버':'미커버'}</span></td>
-   <td class="r hide-sm">${c.routeCount}</td>
-   <td class="reason">${c.routes||'—'}</td></tr>`).join('');
+   <td class="r">${c.routeCount}</td><td class="wrap-c reason">${c.routes||'—'}</td></tr>`).join('');
+if(DATA.gap.length){
+  document.getElementById('gapTbl').innerHTML=DATA.gap.map(g=>
+    `<tr><td><span class="rank">${g.rank}</span></td><td>${mediaPill(g.media.toLowerCase()==='subway'?'subway':'bus')}</td>
+     <td><b>${g.name}</b></td><td><span class="tag">${g.area}</span></td><td class="r">${g.score}</td></tr>`).join('');
+} else { document.getElementById('gapHead').style.display='none'; document.getElementById('gapTbl').closest('.card').style.display='none'; }
 
-/* ---- scatter ---- */
+/* strategy */
+const gmeta={A:['gA','A급 집중 투자','즉시 집행 권장'],B:['gB','B급 보완 투자','커버리지 확대'],C:['gC','C급 테스트 후보','1개월 집행 후 비교']};
+document.getElementById('gradeWrap').innerHTML=['A','B','C'].map(g=>
+  `<div class="grade-card"><span class="gtag ${gmeta[g][0]}">${gmeta[g][1]}</span>
+   <div class="reason" style="margin-bottom:6px">${gmeta[g][2]}</div>
+   <ul>${DATA.strategy[g].map(x=>`<li><b>${x.name}</b><span>${x.reason}</span></li>`).join('')}</ul></div>`).join('');
+document.getElementById('actions').innerHTML=DATA.nextActions.map(a=>`<li>${a}</li>`).join('');
+
+/* scatter */
 let scatterDrawn=false;
 function drawScatter(){
   if(scatterDrawn) return; scatterDrawn=true;
-  const el=document.getElementById('scatter');
-  const W=el.clientWidth, H=el.clientHeight, pad=46;
-  const xs=DATA.fni.map(d=>d.density), ys=DATA.fni.map(d=>d.fni);
-  const xMax=Math.max(...xs)*1.1, yMax=Math.max(...ys)*1.1;
+  const el=document.getElementById('scatter'); const W=el.clientWidth,H=el.clientHeight,pad=46;
+  const xs=DATA.fni.map(d=>d.density),ys=DATA.fni.map(d=>d.fni);
+  const xMax=Math.max(...xs)*1.1,yMax=Math.max(...ys)*1.1;
   const xMed=xs.slice().sort((a,b)=>a-b)[Math.floor(xs.length/2)];
   const yMed=ys.slice().sort((a,b)=>a-b)[Math.floor(ys.length/2)];
-  const px=v=>pad+(v/xMax)*(W-pad-20);
-  const py=v=>H-pad-(v/yMax)*(H-pad-30);
-  let h='';
-  // quadrant lines
-  h+=`<div class="q-line" style="left:${px(xMed)}px;top:10px;width:1px;height:${H-pad-10}px"></div>`;
-  h+=`<div class="q-line" style="left:${pad}px;top:${py(yMed)}px;height:1px;width:${W-pad-20}px"></div>`;
-  h+=`<div class="ql" style="left:${pad+8}px;top:14px">신흥기회 ↖</div>`;
-  h+=`<div class="ql" style="right:24px;top:14px;color:#2d5bff;opacity:.7">최우선 ↗</div>`;
-  h+=`<div class="ql" style="left:${pad+8}px;bottom:${pad}px">후순위</div>`;
-  h+=`<div class="ql" style="right:24px;bottom:${pad}px;color:#e8a32b;opacity:.7">안정고착</div>`;
-  h+=`<div class="axis-x" style="right:8px;bottom:${pad-22}px">밀집도 →</div>`;
-  h+=`<div class="axis-y" style="left:6px;top:6px">FNI ↑</div>`;
-  DATA.fni.forEach((d,idx)=>{
-    const r=8+(d.fni/yMax)*16;
-    const c=QCOLOR[d.quadrant]||'#9aa0ad';
+  const px=v=>pad+(v/xMax)*(W-pad-20), py=v=>H-pad-(v/yMax)*(H-pad-30);
+  let h=`<div class="q-line" style="left:${px(xMed)}px;top:10px;width:1px;height:${H-pad-10}px"></div>
+   <div class="q-line" style="left:${pad}px;top:${py(yMed)}px;height:1px;width:${W-pad-20}px"></div>
+   <div class="ql" style="left:${pad+8}px;top:14px">신흥기회 ↖</div>
+   <div class="ql" style="right:24px;top:14px;color:#2d5bff;opacity:.7">최우선 ↗</div>
+   <div class="ql" style="left:${pad+8}px;bottom:${pad}px">후순위</div>
+   <div class="ql" style="right:24px;bottom:${pad}px;color:#e8a32b;opacity:.7">안정고착</div>
+   <div class="axis-x" style="right:8px;bottom:${pad-22}px">밀집도 →</div>
+   <div class="axis-y" style="left:6px;top:6px">FNI ↑</div>`;
+  DATA.fni.forEach((d,idx)=>{const r=8+(d.fni/yMax)*16,c=QCOLOR[d.quadrant]||'#9aa0ad';
     h+=`<div class="dot" data-i="${idx}" style="left:${px(d.density)}px;bottom:${H-py(d.fni)}px;width:${r}px;height:${r}px;background:${c}"></div>`;
-    if(d.fni>50||d.density>3)
-      h+=`<div class="dot-label" style="left:${px(d.density)}px;bottom:${H-py(d.fni)-r-2}px">${d.name}</div>`;
-  });
+    if(d.fni>50||d.density>3) h+=`<div class="dot-label" style="left:${px(d.density)}px;bottom:${H-py(d.fni)-r-2}px">${d.name}</div>`;});
   el.innerHTML=h;
-  el.querySelectorAll('.dot').forEach(dot=>{
-    const d=DATA.fni[dot.dataset.i];
+  el.querySelectorAll('.dot').forEach(dot=>{const d=DATA.fni[dot.dataset.i];
     dot.onmouseenter=e=>showTip(e,`<b>${d.name}</b><br>밀집도 ${d.density} · FNI ${d.fni}<br>${d.quadrant}<br><span style="opacity:.8">${d.copy}</span>`);
-    dot.onmousemove=moveTip; dot.onmouseleave=hideTip;
-  });
+    dot.onmousemove=moveTip; dot.onmouseleave=hideTip;});
 }
 const tip=document.getElementById('tip');
 function showTip(e,html){tip.innerHTML=html;tip.style.opacity=1;moveTip(e);}
 function moveTip(e){tip.style.left=Math.min(e.clientX+14,window.innerWidth-240)+'px';tip.style.top=(e.clientY+14)+'px';}
 function hideTip(){tip.style.opacity=0;}
 
-/* ---- map ---- */
+/* map */
 let map;
 function initMap(){
   if(map){map.invalidateSize();return;}
   map=L.map('map',{scrollWheelZoom:false}).setView([37.553,126.99],11);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    {attribution:'© OpenStreetMap © CARTO',maxZoom:18}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:18}).addTo(map);
   const cov={}; DATA.coverage.forEach(c=>cov[c.name]=c.covered);
-  DATA.fni.forEach(d=>{
-    if(d.lat==null) return;
-    const isCov=cov[d.name]!==false;
-    L.circleMarker([d.lat,d.lng],{
-      radius:6+(d.fni/100)*16, color:'#fff',weight:2,
-      fillColor:isCov?'#2d5bff':'#e5484d',fillOpacity:.78
-    }).addTo(map).bindTooltip(
-      `<b>${d.name}</b><br>FNI ${d.fni} · 밀집도 ${d.density}<br>${isCov?'커버됨':'미커버'}`,
-      {direction:'top'});
-  });
+  DATA.fni.forEach(d=>{ if(d.lat==null) return; const isCov=cov[d.name]!==false;
+    L.circleMarker([d.lat,d.lng],{radius:6+(d.fni/100)*16,color:'#fff',weight:2,fillColor:isCov?'#2d5bff':'#e5484d',fillOpacity:.78})
+     .addTo(map).bindTooltip(`<b>${d.name}</b><br>FNI ${d.fni} · 밀집도 ${d.density}<br>${isCov?'커버됨':'미커버'}`,{direction:'top'});});
 }
 </script>
 </body>
