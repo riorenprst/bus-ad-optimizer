@@ -603,11 +603,24 @@ function initMap(){
   D.regions.forEach(r=>regByName[r.name]=r);
   D.coverage.forEach(c=>covByName[c.name]=c);
   D.realtime.forEach(r=>rtByName[r.name]=r);
-  const names=D.fni.map(f=>f.name).sort((a,b)=>b.length-a.length);
   const wn=n=>n>=10000?Math.round(n/10000).toLocaleString()+'만':n.toLocaleString();
   const qd=q=>(q||'').replace(/\(.*\)/,'');
 
-  const findAreas=q=>{const o=[];names.forEach(n=>{if(q.includes(n)&&!o.includes(n))o.push(n);});return o;};
+  /* 지역명 별칭 인덱스: "홍대·합정" → 홍대, 합정, 홍대합정 등으로도 매칭 */
+  const areaAlias=[];
+  D.fni.forEach(f=>{
+    const base=f.name, noParen=base.replace(/\(.*?\)/g,'').trim();
+    const vs=new Set([base,noParen]);
+    noParen.split(/[·・\/,\s]+/).forEach(p=>{if(p.length>=2)vs.add(p);});
+    vs.add(noParen.replace(/[·・\/,\s]+/g,''));
+    vs.forEach(v=>{if(v&&v.length>=2)areaAlias.push({a:v,n:base});});
+  });
+  areaAlias.sort((x,y)=>y.a.length-x.a.length);
+  const findAreas=q=>{const o=[],nq=q.replace(/\s+/g,'');areaAlias.forEach(({a,n})=>{if((q.includes(a)||nq.includes(a))&&!o.includes(n))o.push(n);});return o;};
+  /* 오탈자·부분 입력 대비 완만한 유사 지역 추정 (2글자 이상 공통 부분) */
+  function fuzzyArea(q){const nq=q.replace(/[\s?!.,~]/g,'');let best=null,bl=0;
+    areaAlias.forEach(({a,n})=>{for(let L=Math.min(a.length,4);L>=2&&L>bl;L--){for(let i=0;i+L<=a.length;i++){if(nq.includes(a.substr(i,L))){bl=L;best=n;break;}}}});
+    return best;}
 
   function areaCard(n){
     const f=fniByName[n],r=regByName[n],c=covByName[n];
@@ -671,32 +684,56 @@ function initMap(){
     h+=`<br><span class="reason">예: "20대는 어디에?", "50대 카드소비", "음식점 업주", "소상공인 추천"이라고 물어보세요.</span>`;
     return h;
   }
-  const help=()=>`무엇이든 물어보세요! 타겟을 고르면 최적 오프라인 매체를 추천해드려요.<br>예시:<br>· <b>"20대는 어디에 광고해?"</b><br>· <b>"50대 카드소비 상권 추천"</b><br>· "음식점 업주 타겟 추천"<br>· "마곡 알려줘" / "강남이랑 성수 비교"<br>· "신흥기회 어디야?" / "버스 추천"<br>· "예산 얼마 들어?" / "FNI가 뭐야?"`;
+  /* 정체/기능 안내 (자기소개 + 할 수 있는 것) */
+  function capability(){
+    return `저는 <b>오프라인 광고 추천기</b>의 AI 도우미예요 🤖<br>`+
+      `<b>"누구에게 광고할지"</b>만 알려주시면 서울 버스·지하철·상권 공공데이터로 <b>최적의 지역·버스·지하철</b>을 찾아드려요.<br><br>`+
+      `이런 걸 물어보시면 돼요 👇<br>`+
+      `· 🎯 <b>타겟 추천</b> — "20대는 어디에?", "50대 카드소비", "음식점 업주"<br>`+
+      `· 📍 <b>지역 분석</b> — "마곡 알려줘", "강남이랑 성수 비교"<br>`+
+      `· 🚌 <b>매체 추천</b> — "버스 추천", "지하철 호선"<br>`+
+      `· 💰 <b>예산·믹스</b> — "예산 얼마 들어?", "추천 믹스 보여줘"<br>`+
+      `· 📊 <b>개념·근거</b> — "FNI가 뭐야?", "점수 어떻게 계산해?", "커버 안 된 상권"`;
+  }
+  const greeting=()=>`안녕하세요! 👋 <b>오프라인 광고 추천기</b> 도우미예요.<br>광고 <b>타겟</b>만 정해주시면 딱 맞는 오프라인 매체를 찾아드릴게요.<br><br>`+capability();
+  const thanks=()=>`천만에요 😊 더 궁금한 게 있으면 언제든 물어보세요! (예: "신흥기회 어디야?", "버스 추천")`;
+  const help=capability;
 
   function answer(raw){
-    const q=(raw||'').trim(); if(!q) return help();
-    const has=(...k)=>k.some(x=>q.includes(x));
+    const q=(raw||'').trim(); if(!q) return greeting();
+    const ql=q.toLowerCase();
+    const has=(...k)=>k.some(x=>q.includes(x)||ql.includes(String(x).toLowerCase()));
     const areas=findAreas(q);
-    if(has('안녕','도움','뭐 할','뭐할','무엇','사용법')&&!areas.length) return help();
+    const tgt=findTarget(q);
+
+    /* 1) 실질 의도 우선 처리 (인사말이 섞여 있어도 답을 준다) */
     if(areas.length>=2){const c=compareAreas(areas); if(c) return c;}
     if(areas.length===1&&has('버스')) return busInArea(areas[0]);
     if(areas.length===1) return areaCard(areas[0]);
-    const tgt=findTarget(q);
     if(tgt) return targetAns(tgt);
     if(has('신흥','화이트','선점','저평가')) return quadrant('신흥기회','신흥기회(화이트스페이스)','🟢');
     if(has('최우선','공략')) return quadrant('최우선공략','최우선 공략','🔴');
     if(has('고착','함정','안정')) return quadrant('안정고착','안정고착(함정)','⚫');
     if(has('후순위')) return quadrant('후순위','후순위','▫️');
-    if(has('지하철','호선')) return topSub();
-    if(has('버스')) return topBus();
-    if((has('단가','cpm','가격')&&!has('예산'))) return `광고 <b>실단가</b> 데이터는 아직 안 들어왔어요(대행사 제공 예정). 들어오면 비용효율(점수÷단가) 비교를 붙일 수 있어요. 지금은 점수·도달 기준 추천만 가능합니다.`;
-    if(has('믹스','예산','배분','플랜','얼마','비용')) return mixAns();
-    if(has('커버','미커버','빠진','놓친','gap','갭')) return coverageAns();
-    if(has('fni','FNI','금융니즈','금융 니즈','니즈')) return fniAns();
-    if(has('인구','유동','연령','30대','40대','50대','결제','요식','음식','외식','가맹점')) return rtAns();
-    if(has('점수','방법','기준','어떻게 계산','계산','산정')) return methodAns();
-    if(has('추천','어디','최고','best')) return targetsMenu();
-    return `음… 그 질문은 아직 못 알아들었어요 😅<br>이렇게 물어보면 답할 수 있어요:<br>${help()}`;
+    if(has('지하철','호선','전철','메트로')) return topSub();
+    if(has('버스','노선')) return topBus();
+    if((has('단가','cpm','가격','원가')&&!has('예산'))) return `광고 <b>실단가</b> 데이터는 아직 안 들어왔어요(대행사 제공 예정). 들어오면 비용효율(점수÷단가) 비교를 붙일 수 있어요. 지금은 점수·도달 기준 추천만 가능합니다.`;
+    if(has('믹스','예산','배분','플랜','얼마','비용','돈','예산안')) return mixAns();
+    if(has('커버','미커버','빠진','놓친','gap','갭','비어')) return coverageAns();
+    if(has('fni','금융니즈','금융 니즈','니즈')) return fniAns();
+    if(has('인구','유동','연령','나이','결제','요식','음식','외식','가맹점','상주','혼잡')) return rtAns();
+    if(has('점수','방법','기준','계산','산정','어떻게','근거','원리')) return methodAns();
+    if(has('추천','어디','최고','best','골라','정해','뭐가 좋','어느','추천해')) return targetsMenu();
+
+    /* 2) 잡담·메타 질문 (실질 의도가 없을 때) */
+    if(has('고마','감사','thank','thx','굿','좋아','최고','대박','멋지','훌륭','ㄳ','ㄱㅅ')) return thanks();
+    if(has('안녕','하이','헬로','반가','hi','hello','hey','안뇽','ㅎㅇ','좋은 아침','방가')) return greeting();
+    if(has('너 뭐','뭐하니','뭐 하니','뭐해','뭐 해','뭐하는','뭐임','정체','누구','누구야','뭘 할','뭘 하','뭐 할','뭐할','할 수 있','할수있','할줄','기능','사용법','도움','도와','어떻게 써','어떻게 쓰','who','what can')) return capability();
+
+    /* 3) 똑똑한 fallback — 유사 지역 추정 후, 그래도 없으면 기능 안내 */
+    const near=fuzzyArea(q);
+    if(near) return `혹시 <b>${near}</b> 말씀이신가요? 🤔<br><br>`+areaCard(near);
+    return `음, 그 질문은 아직 제가 학습이 안 됐어요 😅 하지만 이런 건 잘 답해드려요!<br><br>`+capability();
   }
 
   const panel=document.getElementById('cpanel'),body=document.getElementById('cbody'),
@@ -704,7 +741,7 @@ function initMap(){
   function add(txt,who){const d=document.createElement('div');d.className='cmsg '+who;d.innerHTML=txt;body.appendChild(d);body.scrollTop=body.scrollHeight;}
   function ask(q){add(q,'u');setTimeout(()=>add(answer(q),'b'),140);}
   function send(){const v=inp.value;if(v.trim()){ask(v);inp.value='';}}
-  document.getElementById('cbtn').onclick=()=>{panel.classList.toggle('on');if(panel.classList.contains('on')){if(!body.childElementCount)add(help(),'b');inp.focus();}};
+  document.getElementById('cbtn').onclick=()=>{panel.classList.toggle('on');if(panel.classList.contains('on')){if(!body.childElementCount)add(greeting(),'b');inp.focus();}};
   document.getElementById('cx').onclick=()=>panel.classList.remove('on');
   document.getElementById('csend').onclick=send;
   inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
