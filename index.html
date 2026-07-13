@@ -141,6 +141,12 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--sub);font-siz
 .cchip{font-size:11.5px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:none;
   padding:6px 10px;border-radius:999px;cursor:pointer}
 .cchip:hover{filter:brightness(.96)}
+.cfollow{display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start;max-width:92%;margin:-4px 0 2px}
+.cfollow .cchip{font-size:11px;background:var(--card);border:1px solid var(--accent-soft)}
+.ctyping{align-self:flex-start;display:flex;gap:4px;padding:10px 12px}
+.ctyping span{width:6px;height:6px;border-radius:50%;background:var(--sub);opacity:.5;animation:cbounce 1s infinite}
+.ctyping span:nth-child(2){animation-delay:.15s}.ctyping span:nth-child(3){animation-delay:.3s}
+@keyframes cbounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
 .cinput{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line)}
 .cinput input{flex:1;font-family:inherit;font-size:13px;border:1px solid var(--line);border-radius:10px;padding:9px 12px;outline:none}
 .cinput input:focus{border-color:var(--accent)}
@@ -355,7 +361,7 @@ details.fold .fold-in{padding-top:12px}
   <div class="chead"><b>🤖 광고 추천 도우미</b><span class="reason">타겟·지역·노선 뭐든 물어보세요</span><button class="x" id="cx">×</button></div>
   <div class="cbody" id="cbody"></div>
   <div class="cchips" id="cchips"></div>
-  <div class="cinput"><input id="cin" placeholder="예: 20대는 어디에 광고해? / 마곡 알려줘" autocomplete="off"><button id="csend">전송</button></div>
+  <div class="cinput"><input id="cin" placeholder="예: 20대는 어디에? / 마곡 알려줘 / 데이터 어디서 와?" autocomplete="off"><button id="csend">전송</button></div>
 </div>
 <div class="tip" id="tip"></div>
 
@@ -654,8 +660,14 @@ function initMap(){
   function rtAns(){const food=D.realtime.slice().sort((a,b)=>b.food-a.food).slice(0,5);return `👥 <b>음식·음료 가맹점 비중 높은 상권</b>(요식 자영업 밀집):<br>`+food.map(r=>`· <b>${r.name}</b> 외식 ${r.food}% · 개인결제 ${r.personal}%`).join('<br>');}
   function busInArea(n){const hit=D.bus.filter(b=>b.areas.includes(n));return hit.length?`🚌 <b>${n}</b> 경유 버스(TOP10 내):<br>`+hit.map(b=>`· <b>${qd(b.name)}</b> ${b.total}점`).join('<br>'):`<b>${n}</b>를 지나는 버스가 TOP10 안엔 없어요.`;}
   function methodAns(){return `📐 <b>노선 점수(100)</b> = `+D.methodRoute.map(m=>`${m[0]} ${m[2]}`).join(' + ')+`<br><br>📍 <b>지역 점수(100)</b> = `+D.methodRegion.map(m=>`${m[0]} ${m[2]}`).join(' + ');}
-  /* 🎯 타겟 추천 질의 */
+  /* ======== 대화 상태 (맥락 유지: 직전 타겟/지역 기억) ======== */
+  const CTX={target:null,area:null,topic:null};
   const TR=D.targetRec;
+  const catOrder=[],catMap={};
+  if(TR&&TR.targets){TR.targets.forEach(t=>{if(!catMap[t.cat]){catMap[t.cat]=[];catOrder.push(t.cat);}catMap[t.cat].push(t);});}
+  const catIcon=c=>/유동|인구/.test(c)?'👥':/카드|소비/.test(c)?'💳':/사업|업종/.test(c)?'🏪':'🎯';
+
+  /* 🎯 타겟 인식 */
   function findTarget(q){
     if(!TR||!TR.targets||!TR.targets.length) return null;
     const T=k=>TR.targets.find(t=>t.key===k);
@@ -667,25 +679,64 @@ function initMap(){
     if(m){const age=m[1]; return /카드|소비|결제/.test(q)?T('card_'+age):T('pop_'+age);}
     return null;
   }
-  function targetAns(t){
+  /* 타겟 후속 제안칩 (대화를 이어가는 버튼) */
+  function tgtChips(t){const c=[{label:'🚌 '+t.label+' 버스 자세히',q:'그 타겟 버스 자세히'}];
+    if(t.subway&&t.subway.length)c.push({label:'🚇 지하철도',q:'그 타겟 지하철'});
+    c.push({label:'📍 집중지역 비교',q:'그 타겟 지역 비교'},{label:'🔄 다른 타겟',q:'타겟 목록'});return c;}
+  function targetAns(t){CTX.target=t;CTX.topic='target';
     let h=`<b>${t.icon} ${t.label}</b> 타겟 추천<br><span class="reason">${t.desc}</span><br><br>`;
     h+=`📍 <b>집중 지역</b>: `+t.areas.slice(0,5).map(a=>`${a.name} (${a.score.toFixed(0)})`).join(', ')+`<br>`;
     h+=`🚌 <b>추천 버스</b>: `+t.bus.slice(0,3).map(b=>`${qd(b.name)} (${b.score.toFixed(0)}점)`).join(', ')+`<br>`;
     if(t.subway&&t.subway.length) h+=`🚇 <b>추천 지하철</b>: `+t.subway.slice(0,3).map(s=>`${s.name} (${s.score.toFixed(0)}점)`).join(', ')+`<br>`;
     h+=`<br><span class="reason">📊 사용 데이터: ${t.srcNote}</span>`;
-    return h;
+    return {html:h,chips:tgtChips(t)};
   }
-  /* 타겟 먼저 고르도록 안내 (오프라인 광고 추천기 컨셉) */
-  function targetsMenu(){
-    if(!TR||!TR.targets||!TR.targets.length) return mixAns();
-    const byCat={}; TR.targets.forEach(t=>{(byCat[t.cat]=byCat[t.cat]||[]).push(t);});
-    let h=`🎯 <b>먼저 "누구에게" 광고할지 골라주세요.</b> 타겟을 정하면 그에 맞는 지역·버스·지하철을 바로 추천해드려요.<br>`;
-    Object.keys(byCat).forEach(c=>{h+=`<br><b>${c}</b><br>`+byCat[c].map(t=>`· ${t.icon} ${t.label}`).join('<br>')+`<br>`;});
-    h+=`<br><span class="reason">예: "20대는 어디에?", "50대 카드소비", "음식점 업주", "소상공인 추천"이라고 물어보세요.</span>`;
-    return h;
+  function targetBusDetail(t){CTX.target=t;
+    let h=`🚌 <b>${t.icon} ${t.label}</b> 추천 버스 (적합순 TOP 6)<br>`+
+      t.bus.slice(0,6).map((b,i)=>`${i+1}. <b>${qd(b.name)}</b> ${b.score.toFixed(0)}점`).join('<br>')+
+      `<br><span class="reason">경유상권 적합도 60% + 노출규모 40% 가중합.</span>`;
+    return {html:h,chips:tgtChips(t)};
   }
-  /* 정체/기능 안내 (자기소개 + 할 수 있는 것) */
-  function capability(){
+  function targetSubDetail(t){CTX.target=t;
+    if(!t.subway||!t.subway.length) return {html:`<b>${t.label}</b>에 특별히 매칭되는 지하철 호선은 상위권에 없어요. 버스가 더 적합합니다.`,chips:tgtChips(t)};
+    let h=`🚇 <b>${t.icon} ${t.label}</b> 추천 지하철<br>`+
+      t.subway.slice(0,5).map((s,i)=>`${i+1}. <b>${s.name}</b> ${s.score.toFixed(0)}점`).join('<br>');
+    return {html:h,chips:tgtChips(t)};
+  }
+  function targetAreaDetail(t){CTX.target=t;
+    const names=t.areas.slice(0,4).map(a=>a.name),cmp=compareAreas(names);
+    if(cmp) return {html:cmp,chips:tgtChips(t)};
+    let h=`📍 <b>${t.label}</b> 집중 지역<br>`+t.areas.slice(0,6).map((a,i)=>`${i+1}. <b>${a.name}</b> ${a.score.toFixed(0)}`).join('<br>');
+    return {html:h,chips:tgtChips(t)};
+  }
+  /* 가이드형 타겟 고르기 (2단계: 유형 → 세부) */
+  const catChips=()=>catOrder.map(c=>({label:catIcon(c)+' '+c,q:'__cat__'+c}));
+  const tgtOfCat=cat=>(catMap[cat]||[]).map(t=>({label:t.icon+' '+t.label,q:t.label}));
+  function targetsMenuResp(){
+    if(!TR||!TR.targets||!TR.targets.length) return {html:mixAns(),chips:[]};
+    return {html:`🎯 <b>누구에게 광고할까요?</b> 타겟 유형을 먼저 골라주세요. 고르면 그에 맞는 지역·버스·지하철을 바로 추천해드려요.`,chips:catChips()};
+  }
+  function catListResp(cat){
+    if(!catMap[cat]) return targetsMenuResp();
+    return {html:`${catIcon(cat)} <b>${cat}</b> — 세부 타겟을 골라주세요.`,chips:tgtOfCat(cat)};
+  }
+  /* 지역 응답 (맥락 저장 + 후속) */
+  function areaResp(n){CTX.area=n;CTX.topic='area';
+    return {html:areaCard(n),chips:[{label:'🚌 '+n+' 버스',q:n+' 버스'},{label:'⚖️ 다른 지역과 비교',q:'지역 비교'},{label:'💰 FNI란?',q:'fni가 뭐야'}]};}
+  /* 데이터 출처 즉답 (메타 질문) */
+  function dataSourceResp(){
+    const h=`📊 저는 <b>서울시 공공데이터</b>로만 계산해요 — 지어낸 숫자는 없습니다.<br>`+
+      `· 버스 승하차 — 서울 열린데이터광장 (월별·정류장별)<br>`+
+      `· 지하철 승하차 — CardSubwayStatsNew API<br>`+
+      `· 상권 개·폐업(FNI) — 서울 상권분석서비스(골목상권) 최근 8분기<br>`+
+      `· 생활인구·카드소비(연령별) — 서울 실시간도시데이터 (OA-21778)<br>`+
+      `· 점포 밀집도 — 소상공인시장진흥공단 상가정보<br><br>`+
+      `22개 상권 중 <b>18곳 API 실수집</b> + 4곳 추정치(배지 표시). 데이터는 <b>매일 08:30 자동 갱신</b>돼요.`;
+    return {html:h,chips:[{label:'📐 점수 계산법',q:'점수 어떻게 계산해'},{label:'🎯 타겟 추천',q:'타겟 목록'}]};
+  }
+  function methodResp(){return {html:methodAns(),chips:[{label:'📊 데이터 출처',q:'데이터 어디서'},{label:'🎯 타겟 추천',q:'타겟 목록'}]};}
+  /* 정체/기능 안내 */
+  function capabilityHtml(){
     return `저는 <b>오프라인 광고 추천기</b>의 AI 도우미예요 🤖<br>`+
       `<b>"누구에게 광고할지"</b>만 알려주시면 서울 버스·지하철·상권 공공데이터로 <b>최적의 지역·버스·지하철</b>을 찾아드려요.<br><br>`+
       `이런 걸 물어보시면 돼요 👇<br>`+
@@ -693,60 +744,94 @@ function initMap(){
       `· 📍 <b>지역 분석</b> — "마곡 알려줘", "강남이랑 성수 비교"<br>`+
       `· 🚌 <b>매체 추천</b> — "버스 추천", "지하철 호선"<br>`+
       `· 💰 <b>예산·믹스</b> — "예산 얼마 들어?", "추천 믹스 보여줘"<br>`+
-      `· 📊 <b>개념·근거</b> — "FNI가 뭐야?", "점수 어떻게 계산해?", "커버 안 된 상권"`;
+      `· 📊 <b>개념·근거</b> — "FNI가 뭐야?", "점수 어떻게 계산해?", "데이터 어디서 와?"`;
   }
-  const greeting=()=>`안녕하세요! 👋 <b>오프라인 광고 추천기</b> 도우미예요.<br>광고 <b>타겟</b>만 정해주시면 딱 맞는 오프라인 매체를 찾아드릴게요.<br><br>`+capability();
-  const thanks=()=>`천만에요 😊 더 궁금한 게 있으면 언제든 물어보세요! (예: "신흥기회 어디야?", "버스 추천")`;
-  const help=capability;
+  const capabilityResp=()=>({html:capabilityHtml(),chips:[{label:'🎯 타겟부터 고르기',q:'타겟 목록'},{label:'📍 지역 검색',q:'지역 검색'},{label:'📊 데이터 출처',q:'데이터 어디서'},{label:'💰 추천 믹스',q:'추천 믹스'}]});
+  const greetingHtml=()=>`안녕하세요! 👋 <b>오프라인 광고 추천기</b> 도우미예요.<br>광고 <b>타겟</b>만 정해주시면 딱 맞는 오프라인 매체를 찾아드릴게요.<br><br>`+capabilityHtml();
+  const greetingResp=()=>({html:greetingHtml(),chips:[{label:'🎯 타겟부터 고르기',q:'타겟 목록'},{label:'📍 지역 검색',q:'지역 검색'},{label:'📊 데이터 출처',q:'데이터 어디서'},{label:'💰 추천 믹스',q:'추천 믹스'}]});
+  const thanksResp=()=>({html:`천만에요 😊 더 궁금한 게 있으면 언제든요! (예: "신흥기회 어디야?", "성수 알려줘")`,chips:[{label:'🎯 타겟 추천',q:'타겟 목록'},{label:'📍 지역 검색',q:'지역 검색'}]});
 
   function answer(raw){
-    const q=(raw||'').trim(); if(!q) return greeting();
+    const q=(raw||'').trim(); if(!q) return greetingResp();
+    if(q.indexOf('__cat__')===0) return catListResp(q.slice(7));   /* 카테고리 칩 클릭 */
     const ql=q.toLowerCase();
     const has=(...k)=>k.some(x=>q.includes(x)||ql.includes(String(x).toLowerCase()));
+    const pron=/거기|여기|그\s*지역|그곳|위\s*지역|방금|아까/.test(q);
+    const tpron=/그\s*타겟|이\s*타겟|방금\s*타겟|그거|그것|같은\s*타겟/.test(q);
     const areas=findAreas(q);
+    const effArea=areas[0]||(pron&&CTX.area?CTX.area:null);
+
+    /* 0) 가이드/메뉴 진입 */
+    if(has('타겟 목록','다른 타겟','타겟 골라','타겟 선택','누구에게','타겟부터','타겟 추천')) return targetsMenuResp();
+    if(has('지역 검색','지역 비교','지역 찾')&&areas.length===0&&!tpron)
+      return {html:`📍 지역명을 입력해보세요. 예: "마곡", "성수", "강남 vs 성수" (22개 상권 지원).`,chips:['강남','성수','마곡','홍대','여의도'].map(a=>({label:a,q:a}))};
+
+    /* 1) 맥락 후속 — 직전 타겟 이어보기 (그 타겟 버스/지하철/지역) */
+    if(tpron&&CTX.target){
+      if(has('버스')) return targetBusDetail(CTX.target);
+      if(has('지하철','호선')) return targetSubDetail(CTX.target);
+      if(has('지역','비교','어디')) return targetAreaDetail(CTX.target);
+      return targetAns(CTX.target);
+    }
     const tgt=findTarget(q);
 
-    /* 1) 실질 의도 우선 처리 (인사말이 섞여 있어도 답을 준다) */
-    if(areas.length>=2){const c=compareAreas(areas); if(c) return c;}
-    if(areas.length===1&&has('버스')) return busInArea(areas[0]);
-    if(areas.length===1) return areaCard(areas[0]);
-    if(tgt) return targetAns(tgt);
-    if(has('신흥','화이트','선점','저평가')) return quadrant('신흥기회','신흥기회(화이트스페이스)','🟢');
-    if(has('최우선','공략')) return quadrant('최우선공략','최우선 공략','🔴');
-    if(has('고착','함정','안정')) return quadrant('안정고착','안정고착(함정)','⚫');
-    if(has('후순위')) return quadrant('후순위','후순위','▫️');
-    if(has('지하철','호선','전철','메트로')) return topSub();
-    if(has('버스','노선')) return topBus();
-    if((has('단가','cpm','가격','원가')&&!has('예산'))) return `광고 <b>실단가</b> 데이터는 아직 안 들어왔어요(대행사 제공 예정). 들어오면 비용효율(점수÷단가) 비교를 붙일 수 있어요. 지금은 점수·도달 기준 추천만 가능합니다.`;
-    if(has('믹스','예산','배분','플랜','얼마','비용','돈','예산안')) return mixAns();
-    if(has('커버','미커버','빠진','놓친','gap','갭','비어')) return coverageAns();
-    if(has('fni','금융니즈','금융 니즈','니즈')) return fniAns();
-    if(has('인구','유동','연령','나이','결제','요식','음식','외식','가맹점','상주','혼잡')) return rtAns();
-    if(has('점수','방법','기준','계산','산정','어떻게','근거','원리')) return methodAns();
-    if(has('추천','어디','최고','best','골라','정해','뭐가 좋','어느','추천해')) return targetsMenu();
+    /* 2) 실질 의도 (인사말이 섞여 있어도 답을 준다) */
+    if(areas.length>=2){const c=compareAreas(areas); if(c){CTX.topic='area';return {html:c,chips:[{label:'🎯 타겟 추천',q:'타겟 목록'},{label:'🚌 버스 TOP',q:'버스 추천'}]};}}
+    if(effArea&&has('버스')) return {html:busInArea(effArea),chips:[{label:'📍 '+effArea+' 상세',q:effArea},{label:'🔄 지역 검색',q:'지역 검색'},{label:'🎯 타겟 추천',q:'타겟 목록'}]};
+    if(effArea) return areaResp(effArea);
+    if(tgt){ if(has('버스')) return targetBusDetail(tgt); if(has('지하철','호선')) return targetSubDetail(tgt); return targetAns(tgt); }
+    if(has('신흥','화이트','선점','저평가')) return {html:quadrant('신흥기회','신흥기회(화이트스페이스)','🟢'),chips:[{label:'🔴 최우선공략',q:'최우선공략'},{label:'💰 FNI란?',q:'fni가 뭐야'},{label:'🎯 타겟 추천',q:'타겟 목록'}]};
+    if(has('최우선','공략')) return {html:quadrant('최우선공략','최우선 공략','🔴'),chips:[{label:'🟢 신흥기회',q:'신흥기회'},{label:'🎯 타겟 추천',q:'타겟 목록'}]};
+    if(has('고착','함정','안정')) return {html:quadrant('안정고착','안정고착(함정)','⚫'),chips:[{label:'🟢 신흥기회',q:'신흥기회'}]};
+    if(has('후순위')) return {html:quadrant('후순위','후순위','▫️'),chips:[{label:'🟢 신흥기회',q:'신흥기회'}]};
+    if(has('지하철','호선','전철','메트로')) {CTX.topic='sub';return {html:topSub(),chips:[{label:'🚌 버스 TOP',q:'버스 추천'},{label:'💰 추천 믹스',q:'추천 믹스'},{label:'🎯 타겟 추천',q:'타겟 목록'}]};}
+    if(has('버스','노선')) {CTX.topic='bus';return {html:topBus(),chips:[{label:'🚇 지하철',q:'지하철 호선'},{label:'💰 추천 믹스',q:'추천 믹스'},{label:'🎯 타겟 추천',q:'타겟 목록'}]};}
+    if((has('단가','cpm','가격','원가')&&!has('예산'))) return {html:`광고 <b>실단가</b> 데이터는 아직 안 들어왔어요(대행사 제공 예정). 들어오면 비용효율(점수÷단가) 비교를 붙일 수 있어요. 지금은 점수·도달 기준 추천만 가능합니다.`,chips:[{label:'💰 믹스(가정단가)',q:'추천 믹스'}]};
+    if(has('믹스','예산','배분','플랜','얼마','비용','돈','예산안')) {CTX.topic='mix';return {html:mixAns(),chips:[{label:'🗺️ 커버 상권',q:'커버 상권'},{label:'🚌 버스 TOP',q:'버스 추천'},{label:'🎯 타겟 추천',q:'타겟 목록'}]};}
+    if(has('커버','미커버','빠진','놓친','gap','갭','비어')) return {html:coverageAns(),chips:[{label:'💰 추천 믹스',q:'추천 믹스'},{label:'🎯 타겟 추천',q:'타겟 목록'}]};
+    if(has('fni','금융니즈','금융 니즈','니즈')) return {html:fniAns(),chips:[{label:'🟢 신흥기회',q:'신흥기회'},{label:'🎯 타겟 추천',q:'타겟 목록'}]};
+    if(has('인구','유동','연령','나이','결제','요식','음식','외식','가맹점','상주','혼잡')) return {html:rtAns(),chips:[{label:'🎯 타겟 추천',q:'타겟 목록'}]};
+    /* 데이터 출처 메타 질문 (즉답) */
+    if(has('출처','어디서','어디에서','소스','어디꺼','어디 데이터','데이터가 어디','무슨 데이터','어떤 데이터','신뢰','믿을','진짜야','정확','공공데이터','실시간')) return dataSourceResp();
+    if(has('점수','방법','기준','계산','산정','산출','어떻게','근거','원리')) return methodResp();
+    if(has('추천','어디','최고','best','골라','정해','뭐가 좋','어느','추천해','광고하')) return targetsMenuResp();
 
-    /* 2) 잡담·메타 질문 (실질 의도가 없을 때) */
-    if(has('고마','감사','thank','thx','굿','좋아','최고','대박','멋지','훌륭','ㄳ','ㄱㅅ')) return thanks();
-    if(has('안녕','하이','헬로','반가','hi','hello','hey','안뇽','ㅎㅇ','좋은 아침','방가')) return greeting();
-    if(has('너 뭐','뭐하니','뭐 하니','뭐해','뭐 해','뭐하는','뭐임','정체','누구','누구야','뭘 할','뭘 하','뭐 할','뭐할','할 수 있','할수있','할줄','기능','사용법','도움','도와','어떻게 써','어떻게 쓰','who','what can')) return capability();
+    /* 3) 잡담·메타 */
+    if(has('고마','감사','thank','thx','굿','좋아','최고','대박','멋지','훌륭','ㄳ','ㄱㅅ')) return thanksResp();
+    if(has('안녕','하이','헬로','반가','hi','hello','hey','안뇽','ㅎㅇ','좋은 아침','방가')) return greetingResp();
+    if(has('너 뭐','뭐하니','뭐 하니','뭐해','뭐 해','뭐하는','뭐임','정체','누구','누구야','뭘 할','뭘 하','뭐 할','뭐할','할 수 있','할수있','할줄','기능','사용법','도움','도와','어떻게 써','어떻게 쓰','who','what can')) return capabilityResp();
 
-    /* 3) 똑똑한 fallback — 유사 지역 추정 후, 그래도 없으면 기능 안내 */
+    /* 4) 똑똑한 fallback */
     const near=fuzzyArea(q);
-    if(near) return `혹시 <b>${near}</b> 말씀이신가요? 🤔<br><br>`+areaCard(near);
-    return `음, 그 질문은 아직 제가 학습이 안 됐어요 😅 하지만 이런 건 잘 답해드려요!<br><br>`+capability();
+    if(near) return {html:`혹시 <b>${near}</b> 말씀이신가요? 🤔<br><br>`+areaCard(near),chips:[{label:'네, '+near+' 맞아요',q:near},{label:'🎯 타겟 추천',q:'타겟 목록'}]};
+    return {html:`음, 그 질문은 아직 제가 학습이 안 됐어요 😅 하지만 이런 건 잘 답해드려요!<br><br>`+capabilityHtml(),chips:capabilityResp().chips};
   }
 
   const panel=document.getElementById('cpanel'),body=document.getElementById('cbody'),
     inp=document.getElementById('cin'),chips=document.getElementById('cchips');
-  function add(txt,who){const d=document.createElement('div');d.className='cmsg '+who;d.innerHTML=txt;body.appendChild(d);body.scrollTop=body.scrollHeight;}
-  function ask(q){add(q,'u');setTimeout(()=>add(answer(q),'b'),140);}
+  function add(txt,who,followups){
+    const d=document.createElement('div');d.className='cmsg '+who;d.innerHTML=txt;body.appendChild(d);
+    if(who==='b'&&followups&&followups.length){
+      const w=document.createElement('div');w.className='cfollow';
+      followups.forEach(c=>{const b=document.createElement('button');b.className='cchip';b.textContent=c.label;b.onclick=()=>ask(c.q,c.label);w.appendChild(b);});
+      body.appendChild(w);
+    }
+    body.scrollTop=body.scrollHeight;
+  }
+  function respond(q){
+    const typ=document.createElement('div');typ.className='ctyping';typ.innerHTML='<span></span><span></span><span></span>';
+    body.appendChild(typ);body.scrollTop=body.scrollHeight;
+    setTimeout(()=>{typ.remove();const r=answer(q);
+      if(typeof r==='string')add(r,'b');else add(r.html,'b',r.chips);},260);
+  }
+  function ask(q,shown){add(shown||q,'u');respond(q);}
   function send(){const v=inp.value;if(v.trim()){ask(v);inp.value='';}}
-  document.getElementById('cbtn').onclick=()=>{panel.classList.toggle('on');if(panel.classList.contains('on')){if(!body.childElementCount)add(greeting(),'b');inp.focus();}};
+  document.getElementById('cbtn').onclick=()=>{panel.classList.toggle('on');if(panel.classList.contains('on')){if(!body.childElementCount){const g=greetingResp();add(g.html,'b',g.chips);}inp.focus();}};
   document.getElementById('cx').onclick=()=>panel.classList.remove('on');
   document.getElementById('csend').onclick=send;
   inp.addEventListener('keydown',e=>{if(e.key==='Enter')send();});
-  ['20대는 어디에?','50대 카드소비','음식점 업주','신흥기회 어디야?','예산 얼마?'].forEach(t=>{
-    const b=document.createElement('button');b.className='cchip';b.textContent=t;b.onclick=()=>ask(t);chips.appendChild(b);});
+  [['🎯 타겟부터','타겟 목록'],['📊 데이터 출처','데이터 어디서 와?'],['👥 20대는 어디에?','20대는 어디에?'],['🏪 음식점 업주','음식점 업주'],['💰 추천 믹스','추천 믹스']].forEach(([label,q])=>{
+    const b=document.createElement('button');b.className='cchip';b.textContent=label;b.onclick=()=>ask(q,label);chips.appendChild(b);});
 })();
 </script>
 </body>
