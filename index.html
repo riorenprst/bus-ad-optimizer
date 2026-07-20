@@ -786,20 +786,33 @@ function initMap(){
     });
     return out.join('\n');
   }
+  // 한글 Windows Excel의 CSV는 UTF-8이 아니라 CP949(ANSI)인 경우가 많음 → UTF-8 실패 시 폴백
+  function decodeText(buf){
+    let s=new TextDecoder('utf-8').decode(buf);
+    if(s.indexOf('�')>=0){ try{ s=new TextDecoder('euc-kr').decode(buf); }catch(_){} }
+    return s.replace(/^﻿/,'').replace(/\r/g,'');
+  }
+  function note(msg){ document.getElementById('cmpResult').innerHTML='<div class="note">'+msg+'</div>'; }
   document.getElementById('cmpFile').onchange=async e=>{
     const f=e.target.files[0]; if(!f) return; e.target.value='';
     try{
-      if(/\.xlsx$/i.test(f.name)){
-        const rows=await parseXlsx(await f.arrayBuffer());
-        const txt=xlsxRowsToText(rows);
-        if(!txt){document.getElementById('cmpResult').innerHTML='<div class="note">엑셀에서 노선을 읽지 못했습니다. A열=노선명, B열=월비용 형식인지 확인해 주세요.</div>';return;}
+      const buf=await f.arrayBuffer(), b=new Uint8Array(buf);
+      const isZip = b[0]===0x50&&b[1]===0x4b&&(b[2]===0x03||b[2]===0x05||b[2]===0x07);   // PK.. (xlsx)
+      const isOle = b[0]===0xD0&&b[1]===0xCF&&b[2]===0x11&&b[3]===0xE0;                    // 구형 .xls
+      const xlsxName=/\.xlsx$/i.test(f.name);
+      if(isZip){
+        const txt=xlsxRowsToText(await parseXlsx(buf));
+        if(!txt){ note('엑셀에서 노선을 읽지 못했습니다. <b>A열=노선명, B열=월비용</b> 형식(첫 시트)인지 확인해 주세요.'); return; }
         inp.value=txt;
-      }else{
-        inp.value=(await f.text()).replace(/\r/g,'');
+      } else if(isOle || (xlsxName && !isZip)){
+        note('구형 Excel(.xls) 또는 비표준 형식으로 보입니다. Excel에서 <b>[다른 이름으로 저장] → Excel 통합 문서(*.xlsx)</b> 또는 <b>CSV(쉼표로 분리)</b>로 저장한 뒤 다시 올려주세요.');
+        return;
+      } else {
+        inp.value=decodeText(buf);   // CSV/txt (UTF-8·CP949 자동)
       }
       document.getElementById('cmpRun').click();
     }catch(err){
-      document.getElementById('cmpResult').innerHTML='<div class="note">파일을 읽지 못했습니다: '+(err&&err.message?err.message:err)+' — CSV로 다시 시도해 보세요.</div>';
+      note('파일을 읽지 못했습니다: '+(err&&err.message?err.message:err)+' — <b>.xlsx</b> 또는 <b>CSV</b>로 저장해 다시 시도해 보세요.');
     }
   };
 })();
