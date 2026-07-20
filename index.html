@@ -340,14 +340,14 @@ details.fold .fold-in{padding-top:12px}
     <p>대행사가 제안한 <b>노선·예산안</b>을 붙여넣으면, 시스템 추천 믹스와 <b>커버리지·비용효율·타겟 정밀도</b>를 즉석에서 비교합니다. 서버 전송 없이 브라우저에서만 계산합니다.</p></div>
 
   <div class="card" style="padding:20px">
-    <div class="s-sub" style="margin-top:0">대행사 믹스 입력 <span class="reason">한 줄에 하나: <code>노선명, 월비용(원)</code> — 비용 생략 시 가정단가(버스 250만·지하철 400만) 적용. 지하철은 "2호선"처럼 입력.</span></div>
+    <div class="s-sub" style="margin-top:0">대행사 믹스 입력 <span class="reason">한 줄에 하나: <code>노선명, 월비용(원)</code> — 비용 생략 시 가정단가(버스 250만·지하철 400만) 적용. 지하철은 "2호선"처럼 입력. <b>Excel(.xlsx)</b> 업로드 시 A열=노선명, B열=월비용.</span></div>
     <textarea id="cmpInput" rows="7" placeholder="예)&#10;146, 3200000&#10;간선420&#10;2호선, 5500000&#10;7호선&#10;강남대로 광역버스"
       style="width:100%;font-family:ui-monospace,monospace;font-size:13.5px;padding:12px;border:1px solid var(--line);border-radius:10px;resize:vertical"></textarea>
     <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap">
       <button id="cmpRun" class="btn-primary">🆚 시스템 믹스와 비교</button>
       <button id="cmpSample" class="btn-ghost">예시 채우기</button>
       <button id="cmpClear" class="btn-ghost">지우기</button>
-      <label class="btn-ghost" style="cursor:pointer">📁 CSV 업로드<input type="file" id="cmpFile" accept=".csv,.txt" style="display:none"></label>
+      <label class="btn-ghost" style="cursor:pointer">📁 파일 업로드(CSV·Excel)<input type="file" id="cmpFile" accept=".csv,.txt,.xlsx" style="display:none"></label>
     </div>
     <div class="reason" style="margin-top:10px">※ 비용은 대행사 실단가가 없을 경우 시스템과 동일한 가정단가를 적용해 <b>동일 조건</b>에서 비교합니다. 실단가를 함께 넣으면 그 값으로 계산합니다.</div>
   </div>
@@ -723,7 +723,85 @@ function initMap(){
   };
   document.getElementById('cmpSample').onclick=()=>{inp.value='146, 3200000\n472\n2호선, 5500000\n7호선\n간선420, 2800000\n360';document.getElementById('cmpRun').click();};
   document.getElementById('cmpClear').onclick=()=>{inp.value='';document.getElementById('cmpResult').innerHTML='';};
-  document.getElementById('cmpFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{inp.value=String(rd.result||'').replace(/\r/g,'');document.getElementById('cmpRun').click();};rd.readAsText(f,'utf-8');};
+  // ── Excel(.xlsx) 인라인 파서: 백엔드/CDN 없이 브라우저 내장 DecompressionStream으로 ZIP+XML 해제 ──
+  function _zipEntries(buf){
+    const dv=new DataView(buf), u8=new Uint8Array(buf);
+    let eocd=-1;
+    for(let i=u8.length-22;i>=0;i--){ if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;} }
+    if(eocd<0) throw new Error('올바른 xlsx(zip) 파일이 아닙니다.');
+    const cnt=dv.getUint16(eocd+10,true); let off=dv.getUint32(eocd+16,true);
+    const dec=new TextDecoder(), ents={};
+    for(let n=0;n<cnt && dv.getUint32(off,true)===0x02014b50;n++){
+      const method=dv.getUint16(off+10,true), compSize=dv.getUint32(off+20,true);
+      const nameLen=dv.getUint16(off+28,true), extraLen=dv.getUint16(off+30,true), commLen=dv.getUint16(off+32,true);
+      const lho=dv.getUint32(off+42,true);
+      const name=dec.decode(u8.subarray(off+46,off+46+nameLen));
+      const lNameLen=dv.getUint16(lho+26,true), lExtraLen=dv.getUint16(lho+28,true);
+      ents[name]={method,compSize,dataStart:lho+30+lNameLen+lExtraLen};
+      off+=46+nameLen+extraLen+commLen;
+    }
+    return {u8,ents};
+  }
+  async function _inflate(u8,e){
+    const slice=u8.subarray(e.dataStart,e.dataStart+e.compSize);
+    if(e.method===0) return new TextDecoder().decode(slice);
+    if(typeof DecompressionStream==='undefined') throw new Error('이 브라우저는 Excel 해제를 지원하지 않습니다. CSV로 업로드해 주세요.');
+    const st=new Response(slice).body.pipeThrough(new DecompressionStream('deflate-raw'));
+    return new TextDecoder().decode(await new Response(st).arrayBuffer());
+  }
+  async function parseXlsx(buf){
+    const {u8,ents}=_zipEntries(buf), P=new DOMParser();
+    let shared=[];
+    if(ents['xl/sharedStrings.xml']){
+      const d=P.parseFromString(await _inflate(u8,ents['xl/sharedStrings.xml']),'application/xml');
+      shared=[...d.getElementsByTagName('si')].map(si=>[...si.getElementsByTagName('t')].map(t=>t.textContent).join(''));
+    }
+    let sheet='xl/worksheets/sheet1.xml';
+    if(!ents[sheet]){ const k=Object.keys(ents).find(x=>/^xl\/worksheets\/.*\.xml$/.test(x)); if(k) sheet=k; }
+    if(!ents[sheet]) throw new Error('시트를 찾지 못했습니다.');
+    const d=P.parseFromString(await _inflate(u8,ents[sheet]),'application/xml'), rows=[];
+    for(const row of d.getElementsByTagName('row')){
+      const cells=[];
+      for(const c of row.getElementsByTagName('c')){
+        const t=c.getAttribute('t'), ref=(c.getAttribute('r')||'').replace(/[0-9]/g,'');
+        const col=ref?ref.split('').reduce((a,ch)=>a*26+(ch.charCodeAt(0)-64),0)-1:cells.length;
+        const v=c.getElementsByTagName('v')[0], isEl=c.getElementsByTagName('t')[0];
+        let val='';
+        if(t==='s') val=v?(shared[+v.textContent]||''):'';
+        else if(t==='inlineStr') val=isEl?isEl.textContent:'';
+        else val=v?v.textContent:'';
+        cells[col]=val;
+      }
+      rows.push(cells);
+    }
+    return rows;
+  }
+  function xlsxRowsToText(rows){
+    const hName=/(노선|매체|route|line|이름|name)/i, hCost=/(비용|예산|단가|금액|cost|budget|price)/i, out=[];
+    rows.forEach((r,i)=>{
+      const name=((r[0]!=null?r[0]:'')+'').trim(), cost=((r[1]!=null?r[1]:'')+'').trim();
+      if(!name) return;
+      if(i===0 && hName.test(name) && (!cost || hCost.test(cost) || isNaN(parseFloat(cost.replace(/[,\s원]/g,''))))) return; // 헤더행 스킵
+      out.push(cost?`${name}, ${cost}`:name);
+    });
+    return out.join('\n');
+  }
+  document.getElementById('cmpFile').onchange=async e=>{
+    const f=e.target.files[0]; if(!f) return; e.target.value='';
+    try{
+      if(/\.xlsx$/i.test(f.name)){
+        const rows=await parseXlsx(await f.arrayBuffer());
+        const txt=xlsxRowsToText(rows);
+        if(!txt){document.getElementById('cmpResult').innerHTML='<div class="note">엑셀에서 노선을 읽지 못했습니다. A열=노선명, B열=월비용 형식인지 확인해 주세요.</div>';return;}
+        inp.value=txt;
+      }else{
+        inp.value=(await f.text()).replace(/\r/g,'');
+      }
+      document.getElementById('cmpRun').click();
+    }catch(err){
+      document.getElementById('cmpResult').innerHTML='<div class="note">파일을 읽지 못했습니다: '+(err&&err.message?err.message:err)+' — CSV로 다시 시도해 보세요.</div>';
+    }
+  };
 })();
 
 /* ============ 무료 내장 Q&A 도우미 (LLM·백엔드 없음, 임베드 데이터 기반) ============ */
