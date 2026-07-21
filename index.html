@@ -417,7 +417,10 @@ document.getElementById('kpis').innerHTML=[
   ['분석 노선',(DATA.busTotal+DATA.subTotal),'개'],
   ['커버 상권',covered+' / '+DATA.fni.length,'']
 ].map(k=>`<div class="kpi"><div class="v">${k[1]}<small>${k[2]}</small></div><div class="l">${k[0]}</div></div>`).join('');
-document.getElementById('metaLine').textContent=`버스 ${mix.filter(m=>m.media==='bus').length}개 · 지하철 ${mix.filter(m=>m.media==='subway').length}개 호선 · 22개 상권 중 ${covered}개 커버`;
+/* 히어로 문구는 '이 시스템이 무엇을 분석하는가'(범위)여야 한다.
+   예전엔 소상공인 예시 믹스의 선정 결과(버스13·지하철4)를 넣어, 바로 아래
+   KPI의 '분석 노선 756개'와 같은 화면에서 모순됐다. */
+document.getElementById('metaLine').textContent=`서울 버스 ${comma(DATA.busTotal)}개 노선 · 지하철 ${DATA.subTotal}개 호선 · ${DATA.fni.length}개 상권 · ${nTargets}종 타겟 분석`;
 document.getElementById('mixDesc').textContent=`총 ${mix.length}개 노선 · 월 비용(가정 단가) ${comma(cost)}원 · 월 추정도달 ${comma(reach)}명`;
 document.getElementById('covDesc').textContent=`22개 타겟 상권 중 ${covered}개 커버 (${(covered/DATA.fni.length*100).toFixed(0)}%) · 미커버 상권은 추가 노선 후보로 관리`;
 
