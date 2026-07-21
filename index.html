@@ -638,25 +638,148 @@ function initMap(){
       if(s) return {media:'subway',matched:true,total:s.total,mass:s.mass,biz:s.bizt,reach:s.reach,areas:new Set(s.areas||[])};
       return {media:'subway',matched:false,areas:new Set()};
     }
-    const b=BUS[key];
+    /* 대행사 표기 흔들림 흡수: "간선420", "지선 6511번", "420(강남~성수)" 등
+       매체유형 접두어를 떼고도 한 번 더 조회한다. */
+    const alt=key.replace(/^(간선|지선|광역|순환|마을|공항|심야|서울)\s*/,'');
+    /* "110A"/"110B"는 데이터에 "110번(A,…)"·"110번(B,…)"로 들어 있어 nrm 결과가 "110".
+       대행사 표기의 꼬리 A/B(가/나)를 떼고 한 번 더 조회한다. */
+    const alt2=alt.replace(/[ab가나]$/,'');
+    const b=BUS[key]||BUS[alt]||BUS[alt2];
     if(b) return {media:'bus',matched:true,total:b[0],mass:b[1],biz:b[2],reach:b[3],areas:new Set(b[4]?b[4].split(';').filter(Boolean):[])};
     return {media:'bus',matched:false,areas:new Set()};
   }
-  function parseInput(txt){
-    return txt.split(/\n/).map(l=>l.trim()).filter(Boolean).map(line=>{
-      const parts=line.split(/[,\t]/).map(s=>s.trim());
-      const name=parts[0]; const L=lookup(name);
-      let cost=null;
-      for(let k=1;k<parts.length;k++){const d=parts[k].replace(/[^0-9]/g,'');if(d){cost=+d;break;}}
-      if(cost==null) cost=(L.media==='subway')?SUBCOST:BUSCOST;
-      return {raw:name,media:L.media,cost,matched:L.matched,total:L.total||0,mass:L.mass||0,biz:L.biz||0,reach:L.reach||0,areas:L.areas||new Set()};
+  /* 금액 셀 파서 — 실제 미디어믹스 시트는 기간·수량·비율 셀이 섞여 있어
+     "숫자만 남기고 이어붙이기"를 하면 날짜(2026-08-01~08-31)가 20260801… 같은
+     천문학적 값이 된다. 숫자로만 이루어진 셀만 금액으로 인정하고 범위를 검증한다. */
+  function parseCost(cell){
+    if(cell==null) return null;
+    const s=(''+cell).trim();
+    if(!s) return null;
+    if(/%/.test(s)) return null;                       // 비율
+    if(/[~\-\/]/.test(s)&&/\d{4}/.test(s)) return null; // 날짜·기간
+    const unit=/억/.test(s)?1e8:/만/.test(s)?1e4:1;
+    const cleaned=s.replace(/[,\s원억만개대월일회]/g,'');
+    if(!/^\d+(\.\d+)?$/.test(cleaned)) return null;    // 숫자 외 문자가 남으면 금액 아님
+    const v=parseFloat(cleaned)*unit;
+    if(!isFinite(v)) return null;
+    if(v<10000||v>1e10) return null;                   // 1만원 미만·100억 초과 = 수량/ID/코드
+    return v;
+  }
+  /* 노선처럼 보이는 셀인가 — 합계행·머리글·메모를 노선으로 세지 않기 위한 방어 */
+  /* "110A"처럼 꼬리에 계통 문자가 붙는 노선이 있어 한 글자까지 허용한다. */
+  const ROUTE_RE=/(^\d{1,4}[a-zA-Z가나]?번?$)|(호선$)|(^(간선|지선|광역|순환|마을|공항|심야)\s*\d{0,4}번?$)|(^[가-힣]{1,4}\d{1,2}$)|(^\d{1,4}[-–]\d{1,2}$)/;
+  function looksLikeRoute(name){
+    if(!name) return false;
+    const s=name.replace(/\s/g,'');
+    if(/^(합계|소계|총계|계|비고|구분|합|총|기타|서울|경기)/.test(s)) return false;
+    return ROUTE_RE.test(s)||ROUTE_RE.test(nrm(name));  // "146번(강남~성수)" 같은 전체 표기도 인정
+  }
+  /* 한 줄 → 셀 배열. 여기가 핵심 방어 지점이다.
+     "3,200,000" 같은 천단위 콤마를 그냥 split하면 3 / 200 / 000 으로 쪼개지고,
+     그 조각(350, 600 …)이 실제 존재하는 버스 노선번호와 우연히 일치해
+     금액이 노선으로 둔갑한다(= 노선 수 폭증의 원인). 분리 전에 먼저 합친다. */
+  function splitCells(line){
+    let s=line;
+    s=s.replace(/"([^"]*)"/g,(m,inner)=>inner.replace(/,/g,' '));  // 따옴표 필드 안 콤마 제거(Excel CSV)
+    if(s.indexOf('\t')<0) s=s.replace(/(\d),(?=\d{3}(?!\d))/g,'$1'); // 천단위 콤마 병합
+    return s.split(/[,\t]/).map(v=>v.trim());   // 빈 셀도 유지해야 열 번호가 맞는다
+  }
+  /* Excel에서 복사한 셀은 줄바꿈을 품은 채 "..." 로 감싸여 온다(주요경유지 등).
+     따옴표가 짝이 맞을 때까지 이어붙여야 한 행이 여러 줄로 쪼개지지 않는다. */
+  function splitLines(txt){
+    const raw=(txt||'').split(/\r?\n/), out=[]; let buf=null;
+    raw.forEach(l=>{
+      buf = (buf===null) ? l : buf+' '+l;
+      if(((buf.match(/"/g)||[]).length)%2===0){ out.push(buf); buf=null; }
     });
+    if(buf!==null) out.push(buf);
+    return out.filter(s=>s.trim());
+  }
+  /* 머리글 행 탐지 — 대행사 실제 시트는 NO·등급·운수회사·노선·경유지·수량처럼
+     열이 많다. 열 이름을 못 읽으면 NO 열(1,2,…)이 노선번호(100,104,120…)와
+     겹쳐 통째로 오인된다. 그래서 열 이름을 먼저 찾는 것이 가장 안전하다. */
+  function findHeader(lines){
+    const N=Math.min(lines.length,15);
+    for(let i=0;i<N;i++){
+      const cells=splitCells(lines[i]);
+      let route=-1,cost=-1,unit=-1,qty=-1;
+      cells.forEach((c,k)=>{
+        const t=c.replace(/\s/g,'');
+        if(route<0 && /^(노선|노선명|노선번호|매체|매체명|route|line)$/i.test(t)) route=k;
+        /* 총액(금액·비용)과 단가는 반드시 구분한다. 단가를 총액으로 읽으면
+           비용이 한 자릿수 이상 작게 나와 비교가 통째로 틀어진다. */
+        if(cost<0 && /(금액|총액|비용|예산|amount|budget|cost)/i.test(t)) cost=k;
+        if(unit<0 && /(단가|price)/i.test(t)) unit=k;
+        if(qty<0 && /^(수량|대수|물량|면수|qty|수량계)$/i.test(t)) qty=k;
+      });
+      if(route>=0) return {row:i,route,cost,unit,qty};
+    }
+    return null;
+  }
+  function parseInput(txt){
+    const rows=[], ignored=[], seen={};
+    const lines=splitLines(txt);
+    const H=findHeader(lines);
+    const add=(name,cost,assumed,qty)=>{
+      const L=lookup(name), key=nrm(name);
+      if(assumed) cost=((L.media==='subway')?SUBCOST:BUSCOST)*(qty||1);
+      if(seen[key]!=null){ rows[seen[key]].cost+=cost; rows[seen[key]].qty+=(qty||1); return; }
+      seen[key]=rows.length;
+      rows.push({raw:name,media:L.media,cost,assumed,qty:qty||1,matched:L.matched,
+        total:L.total||0,mass:L.mass||0,biz:L.biz||0,reach:L.reach||0,areas:L.areas||new Set()});
+    };
+    if(H){
+      /* 머리글이 있으면 열 이름대로만 읽는다 — 경유지·기점 같은 긴 텍스트 열은 아예 보지 않는다. */
+      lines.forEach((line,i)=>{
+        if(i<=H.row) return;
+        const cells=splitCells(line);
+        const name=(cells[H.route]||'').trim();
+        if(!name || !looksLikeRoute(name)){ ignored.push(line.slice(0,80)); return; }
+        const qty=(H.qty>=0)?(parseInt((cells[H.qty]||'').replace(/[^\d]/g,''),10)||0):0;
+        let cost=(H.cost>=0)?parseCost(cells[H.cost]):null;
+        if(cost==null && H.unit>=0){          // 총액 열이 없으면 단가 × 수량
+          const u=parseCost(cells[H.unit]);
+          if(u!=null) cost=u*(qty||1);
+        }
+        add(name,cost,cost==null,qty);
+      });
+      return {rows,ignored,header:H};
+    }
+    lines.forEach(line=>{
+      const parts=splitCells(line).filter(v=>v!=='');
+      if(!parts.length) return;
+      if(/^(합계|소계|총계|계|비고|참고|주석|note)/i.test(parts[0])){ ignored.push(line.slice(0,80)); return; }
+      /* 노선명 열 위치는 파일마다 다르다(매체구분·노선·기간…). 앞에서부터
+         실제 조회되는 셀을 먼저 찾고, 없으면 노선 형태인 셀을 찾는다. */
+      let idx=-1,L=null;
+      /* ① 노선 형태이면서 실제 조회되는 셀 ② 노선 형태(미매칭) ③ 조회만 되는 셀 순.
+         금액·수량 셀이 우연히 노선번호와 겹쳐도 ①이 먼저 잡히도록 한 것. */
+      for(let k=0;k<parts.length;k++){const c=lookup(parts[k]); if(looksLikeRoute(parts[k])&&c.matched){idx=k;L=c;break;}}
+      if(idx<0) for(let k=0;k<parts.length;k++){ if(looksLikeRoute(parts[k])){idx=k;L=lookup(parts[k]);break;} }
+      if(idx<0) for(let k=0;k<parts.length;k++){const c=lookup(parts[k]); if(c.matched){idx=k;L=c;break;}}
+      if(idx<0){ ignored.push(line.slice(0,80)); return; } // 노선 행이 아님 → 집계에서 제외
+      const name=parts[idx], key=nrm(name);
+      /* 금액은 보통 노선명 오른쪽 끝(금액 열) → 뒤에서부터 탐색 */
+      let cost=null;
+      for(let k=parts.length-1;k>idx;k--){const v=parseCost(parts[k]); if(v!=null){cost=v;break;}}
+      if(cost==null) for(let k=idx-1;k>=0;k--){const v=parseCost(parts[k]); if(v!=null){cost=v;break;}}
+      const assumed=(cost==null);
+      if(assumed) cost=(L.media==='subway')?SUBCOST:BUSCOST;
+      if(seen[key]!=null){ if(!assumed) rows[seen[key]].cost+=cost; return; }  // 같은 노선 중복 행 → 비용 합산
+      seen[key]=rows.length;
+      rows.push({raw:name,media:L.media,cost,assumed,qty:1,matched:L.matched,total:L.total||0,mass:L.mass||0,biz:L.biz||0,reach:L.reach||0,areas:L.areas||new Set()});
+    });
+    return {rows,ignored,header:null};
   }
   function metrics(rows){
-    let cost=0,tScore=0,scored=0,mass=0,biz=0,reach=0,bus=0,sub=0; const areas=new Set();
-    rows.forEach(r=>{cost+=r.cost; if(r.media==='subway')sub++;else bus++;
-      if(r.matched){scored++;tScore+=r.total;mass+=r.mass;biz+=r.biz;reach+=r.reach; r.areas.forEach(a=>areas.add(a));}});
-    return {count:rows.length,bus,sub,cost,scored,tScore,reach,areas,areaCov:areas.size,
+    /* 매칭된(=점수를 아는) 노선만 집계한다. 미매칭 노선까지 비용에 넣으면
+       가정 단가가 그대로 총액을 부풀려 비교가 무의미해진다. */
+    const M=rows.filter(r=>r.matched);
+    let cost=0,tScore=0,mass=0,biz=0,reach=0,bus=0,sub=0,assumed=0; const areas=new Set();
+    M.forEach(r=>{cost+=r.cost; if(r.assumed)assumed++; if(r.media==='subway')sub++;else bus++;
+      tScore+=r.total;mass+=r.mass;biz+=r.biz;reach+=r.reach; r.areas.forEach(a=>areas.add(a));});
+    const scored=M.length;
+    return {count:scored,bus,sub,cost,scored,assumed,tScore,reach,areas,areaCov:areas.size,
       avgScore:scored?tScore/scored:0,avgMass:scored?mass/scored:0,avgBiz:scored?biz/scored:0,
       cpArea:areas.size?cost/areas.size:0,cpScore:tScore?cost/tScore:0,cp1k:reach?cost/reach*1000:0};
   }
@@ -668,7 +791,8 @@ function initMap(){
   const vpill=(sysBetter,tie)=>tie?'<span class="verdict v-tie">무승부</span>':
     sysBetter?'<span class="verdict v-sys">시스템 우위</span>':'<span class="verdict v-agt">대행사 우위</span>';
 
-  function render(AM, rows){
+  function render(AM, rows, ignored, header){
+    ignored=ignored||[];
     /* 승패 집계: 커버리지↑ / 점수당비용↓ / 상권당비용↓ / 소상공인지수↑ */
     let wins=0,crit=0; const cmp=(a,b,hib)=>{if(a===b)return;crit++;if((a>b)===hib)wins++;};
     cmp(SM.areaCov,AM.areaCov,true); cmp(SM.cpScore,AM.cpScore,false);
@@ -706,12 +830,25 @@ function initMap(){
       <div style="margin-top:6px"><b style="color:var(--bad)">대행사만 (${only(aa,sa).length})</b> ${chips(only(aa,sa))}</div>
       <div style="margin-top:6px"><b>⚠️ 양쪽 모두 미커버 (${neither.length})</b> ${chips(neither)}</div></div>`;
 
-    /* 매칭 실패 노선 */
+    /* 입력 해석 결과 — 무엇을 노선으로 인식했고 무엇을 버렸는지 먼저 보여준다.
+       (실제 미디어믹스 시트는 머리글·소계·메모 행이 섞여 있어 이 요약이 없으면
+        엉뚱한 행이 노선으로 잡혀도 사용자가 알 수 없다.) */
     const bad=rows.filter(r=>!r.matched);
-    let warn=bad.length?`<div class="note" style="margin-top:14px;background:#fff7ed;color:#7a4a10">⚠️ <b>미분석 노선 ${bad.length}개</b> — 분석 대상(서울 729개 버스·27개 지하철)에서 못 찾아 점수 비교에서 제외했습니다: ${bad.map(b=>`<b>${b.raw}</b>`).join(', ')}<br><span class="reason">노선번호만(예: "146"), 지하철은 "2호선" 형식으로 입력하면 매칭률이 올라갑니다.</span></div>`:
-      `<div class="note" style="margin-top:14px;background:#eefaf933;color:var(--good)">✅ 입력한 ${rows.length}개 노선 모두 매칭됐습니다.</div>`;
+    const asm=rows.filter(r=>r.matched&&r.assumed).length;
+    const totQty=rows.reduce((a,r)=>a+(r.qty||1),0);
+    let parseNote=`<div class="s-sub">🧾 입력 해석 결과</div><div class="note" style="line-height:1.9">
+      ${header?`표의 <b>머리글을 인식</b>해 <b>노선</b> 열${header.cost>=0?'과 <b>비용</b> 열':''}${header.qty>=0?'과 <b>수량</b> 열':''}만 읽었습니다. <span class="reason">(경유지·기점 등 나머지 열은 무시)</span><br>`:''}
+      인식한 노선 <b>${rows.length}개</b>${header&&header.qty>=0?` · 총 수량 <b>${totQty}</b>`:''} (분석 대상과 매칭 <b>${AM.count}개</b>${bad.length?` · 미매칭 ${bad.length}개`:''})
+      ${ignored.length?`<br>노선 행이 아니라고 판단해 제외 <b>${ignored.length}행</b> <span class="reason">(머리글·소계·메모 등)</span>`:''}
+      ${asm?`<br><span class="reason">⚠️ 금액을 못 읽은 ${asm}개 노선은 가정 단가(버스 250만·지하철 400만원/월${header&&header.qty>=0?' × 수량':''})로 계산했습니다. 시트에 금액 열이 없으면 비용 비교는 참고용입니다.</span>`:''}
+      ${AM.count?'':`<br><span style="color:var(--bad)">❗ 매칭된 노선이 없어 비교가 무의미합니다. 노선번호 표기를 확인하세요.</span>`}
+      </div>`;
 
-    document.getElementById('cmpResult').innerHTML=banner+t+cov+warn;
+    /* 매칭 실패 노선 */
+    let warn=bad.length?`<div class="note" style="margin-top:14px;background:#fff7ed;color:#7a4a10">⚠️ <b>미분석 노선 ${bad.length}개</b> — 분석 대상(서울 729개 버스·27개 지하철)에서 못 찾아 <b>비용·점수 집계에서 모두 제외</b>했습니다: ${bad.slice(0,40).map(b=>`<b>${b.raw}</b>`).join(', ')}${bad.length>40?` 외 ${bad.length-40}개`:''}<br><span class="reason">노선번호만(예: "146"), 지하철은 "2호선" 형식으로 입력하면 매칭률이 올라갑니다.</span></div>`:
+      `<div class="note" style="margin-top:14px;background:#eefaf933;color:var(--good)">✅ 인식한 ${rows.length}개 노선 모두 매칭됐습니다.</div>`;
+
+    document.getElementById('cmpResult').innerHTML=parseNote+banner+t+cov+warn;
     document.getElementById('cmpResult').scrollIntoView({behavior:'smooth',block:'start'});
   }
 
@@ -719,7 +856,7 @@ function initMap(){
   document.getElementById('cmpRun').onclick=()=>{
     const txt=(inp.value||'').trim();
     if(!txt){document.getElementById('cmpResult').innerHTML=`<div class="note">먼저 대행사 노선을 입력하거나 <b>예시 채우기</b>를 눌러보세요.</div>`;return;}
-    const rows=parseInput(txt); render(metrics(rows),rows);
+    const P=parseInput(txt); render(metrics(P.rows),P.rows,P.ignored,P.header);
   };
   document.getElementById('cmpSample').onclick=()=>{inp.value='146, 3200000\n472\n2호선, 5500000\n7호선\n간선420, 2800000\n360';document.getElementById('cmpRun').click();};
   document.getElementById('cmpClear').onclick=()=>{inp.value='';document.getElementById('cmpResult').innerHTML='';};
@@ -777,12 +914,14 @@ function initMap(){
     return rows;
   }
   function xlsxRowsToText(rows){
-    const hName=/(노선|매체|route|line|이름|name)/i, hCost=/(비용|예산|단가|금액|cost|budget|price)/i, out=[];
-    rows.forEach((r,i)=>{
-      const name=((r[0]!=null?r[0]:'')+'').trim(), cost=((r[1]!=null?r[1]:'')+'').trim();
-      if(!name) return;
-      if(i===0 && hName.test(name) && (!cost || hCost.test(cost) || isNaN(parseFloat(cost.replace(/[,\s원]/g,''))))) return; // 헤더행 스킵
-      out.push(cost?`${name}, ${cost}`:name);
+    /* A열=노선·B열=비용으로 가정하지 않는다. 실제 미디어믹스 시트는
+       매체구분·노선·대수·기간·단가·금액 등 다열 구조라, 행 전체를 넘기고
+       parseInput이 노선 셀과 금액 셀을 스스로 찾게 한다. */
+    const out=[];
+    rows.forEach(r=>{
+      const cells=(r||[]).map(c=>(c==null?'':(''+c)).trim().replace(/[,\t\n]/g,' '));
+      if(!cells.some(c=>c!=='')) return;
+      out.push(cells.join('\t'));   // 탭 구분 + 빈 셀 유지 → 머리글 열 번호가 그대로 살아난다
     });
     return out.join('\n');
   }
