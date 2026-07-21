@@ -679,10 +679,12 @@ function initMap(){
      그 조각(350, 600 …)이 실제 존재하는 버스 노선번호와 우연히 일치해
      금액이 노선으로 둔갑한다(= 노선 수 폭증의 원인). 분리 전에 먼저 합친다. */
   function splitCells(line){
-    let s=line;
-    s=s.replace(/"([^"]*)"/g,(m,inner)=>inner.replace(/,/g,' '));  // 따옴표 필드 안 콤마 제거(Excel CSV)
-    if(s.indexOf('\t')<0) s=s.replace(/(\d),(?=\d{3}(?!\d))/g,'$1'); // 천단위 콤마 병합
-    return s.split(/[,\t]/).map(v=>v.trim());   // 빈 셀도 유지해야 열 번호가 맞는다
+    let s=line.replace(/"([^"]*)"/g,(m,inner)=>inner.replace(/,/g,' '));  // 따옴표 필드 안 콤마 제거
+    /* 탭이 있으면 Excel 복사본 → 탭으로만 나눈다. 콤마까지 구분자로 쓰면
+       "1,700,000"(단가) 같은 셀이 1/700/000으로 쪼개져 단가표를 못 읽는다. */
+    if(s.indexOf('\t')>=0) return s.split('\t').map(v=>v.trim());
+    s=s.replace(/(\d),(?=\d{3}(?!\d))/g,'$1');  // CSV: 천단위 콤마 병합 후 분리
+    return s.split(',').map(v=>v.trim());       // 빈 셀도 유지해야 열 번호가 맞는다
   }
   /* Excel에서 복사한 셀은 줄바꿈을 품은 채 "..." 로 감싸여 온다(주요경유지 등).
      따옴표가 짝이 맞을 때까지 이어붙여야 한 행이 여러 줄로 쪼개지지 않는다. */
@@ -702,30 +704,52 @@ function initMap(){
     const N=Math.min(lines.length,15);
     for(let i=0;i<N;i++){
       const cells=splitCells(lines[i]);
-      let route=-1,cost=-1,unit=-1,qty=-1;
+      let route=-1,grade=-1,cost=-1,unit=-1,qty=-1;
       cells.forEach((c,k)=>{
         const t=c.replace(/\s/g,'');
         if(route<0 && /^(노선|노선명|노선번호|매체|매체명|route|line)$/i.test(t)) route=k;
+        if(grade<0 && /^(등급|급|grade|tier)$/i.test(t)) grade=k;
         /* 총액(금액·비용)과 단가는 반드시 구분한다. 단가를 총액으로 읽으면
            비용이 한 자릿수 이상 작게 나와 비교가 통째로 틀어진다. */
         if(cost<0 && /(금액|총액|비용|예산|amount|budget|cost)/i.test(t)) cost=k;
         if(unit<0 && /(단가|price)/i.test(t)) unit=k;
         if(qty<0 && /^(수량|대수|물량|면수|qty|수량계)$/i.test(t)) qty=k;
       });
-      if(route>=0) return {row:i,route,cost,unit,qty};
+      if(route>=0) return {row:i,route,grade,cost,unit,qty};
     }
     return null;
+  }
+  /* 등급별 단가표 인식 — 실제 미디어믹스는 노선도(등급·수량)와 단가표(등급·단가)가
+     한 벌로 온다. 노선별 금액이 따로 없으므로 등급 단가 × 수량으로 비용을 만든다.
+     예) "매체비 1 SSA 1,700,000 67 32% …" → {SSA:1700000} */
+  const GRADE_RE=/^(SSA|SA|A|B|C|S)$/i;
+  function findRateCard(lines){
+    const rc={};
+    lines.forEach(line=>{
+      const cells=splitCells(line).filter(v=>v!=='');
+      for(let k=0;k<cells.length;k++){
+        if(!GRADE_RE.test(cells[k])) continue;
+        for(let j=k+1;j<Math.min(cells.length,k+4);j++){
+          const v=parseCost(cells[j]);
+          /* 노선번호(≤9999)·수량은 이 범위에 못 들어와 오인되지 않는다 */
+          if(v!=null && v>=100000 && v<=50000000){ rc[cells[k].toUpperCase()]=v; break; }
+        }
+        break;
+      }
+    });
+    return rc;
   }
   function parseInput(txt){
     const rows=[], ignored=[], seen={};
     const lines=splitLines(txt);
     const H=findHeader(lines);
-    const add=(name,cost,assumed,qty)=>{
+    const RC=findRateCard(lines);
+    const add=(name,cost,assumed,qty,grade)=>{
       const L=lookup(name), key=nrm(name);
       if(assumed) cost=((L.media==='subway')?SUBCOST:BUSCOST)*(qty||1);
       if(seen[key]!=null){ rows[seen[key]].cost+=cost; rows[seen[key]].qty+=(qty||1); return; }
       seen[key]=rows.length;
-      rows.push({raw:name,media:L.media,cost,assumed,qty:qty||1,matched:L.matched,
+      rows.push({raw:name,media:L.media,cost,assumed,qty:qty||1,grade:grade||'',matched:L.matched,
         total:L.total||0,mass:L.mass||0,biz:L.biz||0,reach:L.reach||0,areas:L.areas||new Set()});
     };
     if(H){
@@ -736,14 +760,16 @@ function initMap(){
         const name=(cells[H.route]||'').trim();
         if(!name || !looksLikeRoute(name)){ ignored.push(line.slice(0,80)); return; }
         const qty=(H.qty>=0)?(parseInt((cells[H.qty]||'').replace(/[^\d]/g,''),10)||0):0;
+        const g=((cells[H.grade]||'').replace(/\s/g,'')).toUpperCase();
         let cost=(H.cost>=0)?parseCost(cells[H.cost]):null;
         if(cost==null && H.unit>=0){          // 총액 열이 없으면 단가 × 수량
           const u=parseCost(cells[H.unit]);
           if(u!=null) cost=u*(qty||1);
         }
-        add(name,cost,cost==null,qty);
+        if(cost==null && H.grade>=0 && RC[g]!=null) cost=RC[g]*(qty||1);  // 등급 단가표 × 수량
+        add(name,cost,cost==null,qty,g);
       });
-      return {rows,ignored,header:H};
+      return {rows,ignored,header:H,rateCard:RC};
     }
     lines.forEach(line=>{
       const parts=splitCells(line).filter(v=>v!=='');
@@ -767,9 +793,9 @@ function initMap(){
       if(assumed) cost=(L.media==='subway')?SUBCOST:BUSCOST;
       if(seen[key]!=null){ if(!assumed) rows[seen[key]].cost+=cost; return; }  // 같은 노선 중복 행 → 비용 합산
       seen[key]=rows.length;
-      rows.push({raw:name,media:L.media,cost,assumed,qty:1,matched:L.matched,total:L.total||0,mass:L.mass||0,biz:L.biz||0,reach:L.reach||0,areas:L.areas||new Set()});
+      rows.push({raw:name,media:L.media,cost,assumed,qty:1,grade:'',matched:L.matched,total:L.total||0,mass:L.mass||0,biz:L.biz||0,reach:L.reach||0,areas:L.areas||new Set()});
     });
-    return {rows,ignored,header:null};
+    return {rows,ignored,header:null,rateCard:RC};
   }
   function metrics(rows){
     /* 매칭된(=점수를 아는) 노선만 집계한다. 미매칭 노선까지 비용에 넣으면
@@ -791,8 +817,8 @@ function initMap(){
   const vpill=(sysBetter,tie)=>tie?'<span class="verdict v-tie">무승부</span>':
     sysBetter?'<span class="verdict v-sys">시스템 우위</span>':'<span class="verdict v-agt">대행사 우위</span>';
 
-  function render(AM, rows, ignored, header){
-    ignored=ignored||[];
+  function render(AM, rows, ignored, header, rateCard){
+    ignored=ignored||[]; rateCard=rateCard||{};
     /* 승패 집계: 커버리지↑ / 점수당비용↓ / 상권당비용↓ / 소상공인지수↑ */
     let wins=0,crit=0; const cmp=(a,b,hib)=>{if(a===b)return;crit++;if((a>b)===hib)wins++;};
     cmp(SM.areaCov,AM.areaCov,true); cmp(SM.cpScore,AM.cpScore,false);
@@ -837,7 +863,8 @@ function initMap(){
     const asm=rows.filter(r=>r.matched&&r.assumed).length;
     const totQty=rows.reduce((a,r)=>a+(r.qty||1),0);
     let parseNote=`<div class="s-sub">🧾 입력 해석 결과</div><div class="note" style="line-height:1.9">
-      ${header?`표의 <b>머리글을 인식</b>해 <b>노선</b> 열${header.cost>=0?'과 <b>비용</b> 열':''}${header.qty>=0?'과 <b>수량</b> 열':''}만 읽었습니다. <span class="reason">(경유지·기점 등 나머지 열은 무시)</span><br>`:''}
+      ${header?`표의 <b>머리글을 인식</b>해 <b>노선</b> 열${header.grade>=0?'·<b>등급</b> 열':''}${header.cost>=0?'·<b>비용</b> 열':''}${header.qty>=0?'·<b>수량</b> 열':''}만 읽었습니다. <span class="reason">(경유지·기점 등 나머지 열은 무시)</span><br>`:''}
+      ${Object.keys(rateCard).length?`💰 <b>등급 단가표 인식</b> — ${Object.keys(rateCard).map(g=>`${g} ${wonC(rateCard[g])}원`).join(' · ')} <span class="reason">→ 노선별 비용 = 등급 단가 × 수량(월 기준)</span><br>`:''}
       인식한 노선 <b>${rows.length}개</b>${header&&header.qty>=0?` · 총 수량 <b>${totQty}</b>`:''} (분석 대상과 매칭 <b>${AM.count}개</b>${bad.length?` · 미매칭 ${bad.length}개`:''})
       ${ignored.length?`<br>노선 행이 아니라고 판단해 제외 <b>${ignored.length}행</b> <span class="reason">(머리글·소계·메모 등)</span>`:''}
       ${asm?`<br><span class="reason">⚠️ 금액을 못 읽은 ${asm}개 노선은 가정 단가(버스 250만·지하철 400만원/월${header&&header.qty>=0?' × 수량':''})로 계산했습니다. 시트에 금액 열이 없으면 비용 비교는 참고용입니다.</span>`:''}
@@ -856,7 +883,7 @@ function initMap(){
   document.getElementById('cmpRun').onclick=()=>{
     const txt=(inp.value||'').trim();
     if(!txt){document.getElementById('cmpResult').innerHTML=`<div class="note">먼저 대행사 노선을 입력하거나 <b>예시 채우기</b>를 눌러보세요.</div>`;return;}
-    const P=parseInput(txt); render(metrics(P.rows),P.rows,P.ignored,P.header);
+    const P=parseInput(txt); render(metrics(P.rows),P.rows,P.ignored,P.header,P.rateCard);
   };
   document.getElementById('cmpSample').onclick=()=>{inp.value='146, 3200000\n472\n2호선, 5500000\n7호선\n간선420, 2800000\n360';document.getElementById('cmpRun').click();};
   document.getElementById('cmpClear').onclick=()=>{inp.value='';document.getElementById('cmpResult').innerHTML='';};
