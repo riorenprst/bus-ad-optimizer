@@ -810,14 +810,24 @@ function initMap(){
       cpArea:areas.size?cost/areas.size:0,cpScore:tScore?cost/tScore:0,cp1k:reach?cost/reach*1000:0};
   }
   /* 시스템 믹스 rows (mass/biz는 조회로 보강, 비용·도달·총점은 믹스 원본) */
-  const sysRows=DATA.mix.map(m=>{const L=lookup(m.name);
-    return {media:m.media,cost:m.cost,matched:true,total:m.total,mass:L.mass||0,biz:L.biz||0,reach:m.reach,areas:new Set(m.areas||[])};});
-  const SM=metrics(sysRows);
+  /* 시스템 믹스는 월 5,000만원 예산 기준 17개다. 대행사 안과 예산이 다르면
+     "돈을 더 쓴 쪽이 이기는" 비교가 되므로, 대행사 총액에 맞춰 믹스를 잘라
+     동일 예산으로 맞춘 뒤 비교한다(순위 높은 것부터 예산 소진까지). */
+  function sysRowsForBudget(budget){
+    const out=[]; let acc=0;
+    DATA.mix.slice().sort((a,b)=>(a.rank||0)-(b.rank||0)).forEach(m=>{
+      if(budget>0 && acc+m.cost>budget) return;
+      acc+=m.cost;
+      const L=lookup(m.name);
+      out.push({media:m.media,cost:m.cost,matched:true,total:m.total,mass:L.mass||0,biz:L.biz||0,reach:m.reach,areas:new Set(m.areas||[])});
+    });
+    return out;
+  }
 
   const vpill=(sysBetter,tie)=>tie?'<span class="verdict v-tie">무승부</span>':
     sysBetter?'<span class="verdict v-sys">시스템 우위</span>':'<span class="verdict v-agt">대행사 우위</span>';
 
-  function render(AM, rows, ignored, header, rateCard){
+  function render(AM, SM, rows, ignored, header, rateCard){
     ignored=ignored||[]; rateCard=rateCard||{};
     /* 승패 집계: 커버리지↑ / 점수당비용↓ / 상권당비용↓ / 소상공인지수↑ */
     let wins=0,crit=0; const cmp=(a,b,hib)=>{if(a===b)return;crit++;if((a>b)===hib)wins++;};
@@ -832,7 +842,7 @@ function initMap(){
     let t=`<div class="card scroll"><table><thead><tr><th>항목</th><th class="r">시스템 추천</th><th class="r">대행사 제안</th><th>판정</th></tr></thead><tbody>`;
     t+=row('노선 수',SM.count+'개',AM.count+'개');
     t+=row('버스 : 지하철',SM.bus+' : '+SM.sub,AM.bus+' : '+AM.sub);
-    t+=row('월 총비용',wonC(SM.cost)+'원',wonC(AM.cost)+'원',vpill(SM.cost<AM.cost,SM.cost===AM.cost));
+    t+=row('월 총비용 <span class="reason">(동일 예산)</span>',wonC(SM.cost)+'원',wonC(AM.cost)+'원',vpill(SM.cost<AM.cost,SM.cost===AM.cost));
     t+=row('상권 커버리지',SM.areaCov+'개',AM.areaCov+'개',vpill(SM.areaCov>AM.areaCov,SM.areaCov===AM.areaCov),true);
     t+=row('상권당 비용',wonC(SM.cpArea)+'원',wonC(AM.cpArea)+'원',vpill(SM.cpArea<AM.cpArea,Math.round(SM.cpArea)===Math.round(AM.cpArea)));
     t+=row('점수당 비용',wonC(SM.cpScore)+'원',wonC(AM.cpScore)+'원',vpill(SM.cpScore<AM.cpScore,Math.round(SM.cpScore)===Math.round(AM.cpScore)));
@@ -862,7 +872,9 @@ function initMap(){
     const bad=rows.filter(r=>!r.matched);
     const asm=rows.filter(r=>r.matched&&r.assumed).length;
     const totQty=rows.reduce((a,r)=>a+(r.qty||1),0);
+    const fullMix=DATA.mix.reduce((a,m)=>a+m.cost,0);
     let parseNote=`<div class="s-sub">🧾 입력 해석 결과</div><div class="note" style="line-height:1.9">
+      ⚖️ <b>동일 예산 비교</b> — 대행사 안(<b>${wonC(AM.cost)}원/월</b>)과 같은 금액으로 시스템 믹스를 다시 편성해 비교합니다. <span class="reason">(전체 추천 믹스는 ${DATA.mix.length}개·${wonC(fullMix)}원/월 규모이나, 예산이 다르면 비교가 성립하지 않아 잘라 맞춥니다.)</span><br>
       ${header?`표의 <b>머리글을 인식</b>해 <b>노선</b> 열${header.grade>=0?'·<b>등급</b> 열':''}${header.cost>=0?'·<b>비용</b> 열':''}${header.qty>=0?'·<b>수량</b> 열':''}만 읽었습니다. <span class="reason">(경유지·기점 등 나머지 열은 무시)</span><br>`:''}
       ${Object.keys(rateCard).length?`💰 <b>등급 단가표 인식</b> — ${Object.keys(rateCard).map(g=>`${g} ${wonC(rateCard[g])}원`).join(' · ')} <span class="reason">→ 노선별 비용 = 등급 단가 × 수량(월 기준)</span><br>`:''}
       인식한 노선 <b>${rows.length}개</b>${header&&header.qty>=0?` · 총 수량 <b>${totQty}</b>`:''} (분석 대상과 매칭 <b>${AM.count}개</b>${bad.length?` · 미매칭 ${bad.length}개`:''})
@@ -883,7 +895,10 @@ function initMap(){
   document.getElementById('cmpRun').onclick=()=>{
     const txt=(inp.value||'').trim();
     if(!txt){document.getElementById('cmpResult').innerHTML=`<div class="note">먼저 대행사 노선을 입력하거나 <b>예시 채우기</b>를 눌러보세요.</div>`;return;}
-    const P=parseInput(txt); render(metrics(P.rows),P.rows,P.ignored,P.header,P.rateCard);
+    const P=parseInput(txt), AM=metrics(P.rows);
+    /* 대행사 총액에 맞춘 동일 예산 시스템 믹스와 비교 */
+    const SM=metrics(sysRowsForBudget(AM.cost));
+    render(AM,SM,P.rows,P.ignored,P.header,P.rateCard);
   };
   document.getElementById('cmpSample').onclick=()=>{inp.value='146, 3200000\n472\n2호선, 5500000\n7호선\n간선420, 2800000\n360';document.getElementById('cmpRun').click();};
   document.getElementById('cmpClear').onclick=()=>{inp.value='';document.getElementById('cmpResult').innerHTML='';};
