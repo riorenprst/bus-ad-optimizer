@@ -874,7 +874,7 @@ function initMap(){
       if(budget>0 && acc+m.cost>budget) return;
       acc+=m.cost;
       const L=lookup(m.name);
-      out.push({media:m.media,cost:m.cost,matched:true,total:m.total,mass:L.mass||0,biz:L.biz||0,reach:m.reach,areas:new Set(m.areas||[])});
+      out.push({name:m.name,media:m.media,cost:m.cost,matched:true,total:m.total,mass:L.mass||0,biz:L.biz||0,reach:m.reach,areas:new Set(m.areas||[])});
     });
     return out;
   }
@@ -882,7 +882,8 @@ function initMap(){
   const vpill=(sysBetter,tie)=>tie?'<span class="verdict v-tie">무승부</span>':
     sysBetter?'<span class="verdict v-sys">시스템 우위</span>':'<span class="verdict v-agt">대행사 우위</span>';
 
-  function render(AM, SM, rows, ignored, header, rateCard, amed){
+  function render(AM, SM, rows, ignored, header, rateCard, amed, sysRows){
+    sysRows=sysRows||[];
     ignored=ignored||[]; rateCard=rateCard||{};
     const medLabel=(amed&&amed.size)?[...amed].map(m=>m==='subway'?'지하철':'버스').join('+'):'버스+지하철';
     const medOnly=amed&&amed.size===1;
@@ -945,7 +946,49 @@ function initMap(){
     let warn=bad.length?`<div class="note" style="margin-top:14px;background:#fff7ed;color:#7a4a10">⚠️ <b>미분석 노선 ${bad.length}개</b> — 분석 대상(서울 ${comma(DATA.busTotal)}개 버스·${DATA.subTotal}개 지하철)에서 못 찾아 <b>비용·점수 집계에서 모두 제외</b>했습니다: ${bad.slice(0,40).map(b=>`<b>${b.raw}</b>`).join(', ')}${bad.length>40?` 외 ${bad.length-40}개`:''}<br><span class="reason">노선번호만(예: "146"), 지하철은 "2호선" 형식으로 입력하면 매칭률이 올라갑니다.</span></div>`:
       `<div class="note" style="margin-top:14px;background:#eefaf933;color:var(--good)">✅ 인식한 ${rows.length}개 노선 모두 매칭됐습니다.</div>`;
 
-    document.getElementById('cmpResult').innerHTML=parseNote+banner+t+cov+warn;
+    /* 시스템이 실제로 편성한 노선 목록 — "우위"의 근거. 이게 없으면 숫자만 선언하는 꼴. */
+    const medNm=m=>m==='subway'?'🚇':'🚌';
+    const sysSorted=sysRows.slice().sort((a,b)=>b.total-a.total);
+    let sysList=`<div class="s-sub">📋 시스템이 편성한 실제 노선 (${sysRows.length}개) — <span class="reason">위 "시스템 우위"의 근거</span></div>
+      <div class="note">대행사와 <b>같은 예산·같은 매체</b>로 아래 노선들을 담으면 위 성과(커버 ${SM.areaCov}상권·월 ${wonC(SM.reach)}명 도달)가 나옵니다.</div>
+      <div class="card scroll" style="max-height:340px;overflow:auto"><table><thead><tr><th>#</th><th>노선</th><th class="r">점수</th><th class="r">월비용</th><th>경유 상권</th></tr></thead><tbody>`;
+    sysSorted.forEach((r,idx)=>{
+      const ar=[...r.areas]; sysList+=`<tr><td>${idx+1}</td><td>${medNm(r.media)} ${r.name}</td><td class="r">${(r.total||0).toFixed(1)}</td><td class="r">${wonC(r.cost)}</td><td class="reason">${ar.length?ar.join(' · '):'—'}</td></tr>`;
+    });
+    sysList+=`</tbody></table></div>`;
+
+    /* 대행사 안 개선 제안 — 뭘 고쳐야 하는지 구체적으로. 놓친 상권 + 추가할 노선 + 뺄 노선.
+       (allT·chips는 위 커버리지 상세 섹션에서 이미 선언됨 — 재사용) */
+    const agencyKeys=new Set(rows.filter(r=>r.matched).map(r=>nrm(r.raw)));
+    const missing=allT.filter(a=>!AM.areas.has(a));
+    const inv=pickInv((amed&&amed.size)?amed:null);
+    const recs=[]; const usedRec=new Set();
+    missing.forEach(area=>{
+      const cand=inv.filter(m=>(m.areas||[]).includes(area) && !agencyKeys.has(nrm(m.name)) && !usedRec.has(nrm(m.name)))
+                    .sort((a,b)=>a.cost-b.cost)[0];
+      if(cand){ recs.push({area,route:cand}); usedRec.add(nrm(cand.name)); }
+    });
+    const removable=rows.filter(r=>r.matched && r.areas.size===0);
+    let improve='';
+    if(AM.count){
+      improve=`<div class="s-sub">🔧 대행사 안, 이렇게 개선하세요</div><div class="card" style="padding:16px;line-height:1.9">`;
+      if(missing.length){
+        improve+=`<div><b style="color:var(--bad)">① 놓친 상권 ${missing.length}개</b> — 대행사 안이 커버하지 못하는 타겟 상권: ${chips(missing)}</div>`;
+        if(recs.length){
+          improve+=`<div style="margin-top:10px"><b style="color:var(--accent)">② 추가하면 좋은 노선</b> <span class="reason">(대행사 안에 없고, 놓친 상권을 최저비용으로 커버)</span><div class="card scroll" style="margin-top:6px"><table><thead><tr><th>보완할 상권</th><th>추가 추천 노선</th><th class="r">월비용</th></tr></thead><tbody>`+
+            recs.map(x=>`<tr><td><span class="tag">${x.area}</span></td><td>${medNm(x.route.media)} ${x.route.name}</td><td class="r">${wonC(x.route.cost)}</td></tr>`).join('')+
+            `</tbody></table></div><div class="reason" style="margin-top:4px">위 ${recs.length}개 노선을 더하면 놓친 상권을 ${recs.length}개 추가로 커버합니다.</div></div>`;
+        }
+      } else {
+        improve+=`<div><b style="color:var(--good)">① 상권 커버리지</b> — 대행사 안이 22개 상권을 모두 커버합니다. 커버리지 측면에선 보완할 상권이 없습니다.</div>`;
+      }
+      if(removable.length){
+        improve+=`<div style="margin-top:10px"><b style="color:var(--bad)">③ 빼도 되는 노선 ${removable.length}개</b> <span class="reason">(22개 타겟 상권을 하나도 지나지 않아 예산만 쓰는 노선)</span>: ${removable.slice(0,20).map(r=>`<b>${r.raw}</b>`).join(', ')}${removable.length>20?` 외 ${removable.length-20}개`:''}</div>`;
+      }
+      improve+=`</div>`;
+    }
+
+    document.getElementById('cmpResult').innerHTML=parseNote+banner+t+improve+sysList+cov+warn;
     document.getElementById('cmpResult').scrollIntoView({behavior:'smooth',block:'start'});
   }
 
@@ -1004,8 +1047,9 @@ function initMap(){
     /* 대행사가 쓴 매체에 한정 + 총액에 맞춘 동일 예산 시스템 믹스와 비교
        (버스만 넣으면 버스만, 지하철 섞였으면 섞어서 — 매체 유불리 제거) */
     const amed=new Set(P.rows.filter(r=>r.matched).map(r=>r.media));
-    const SM=metrics(sysRowsForBudget(AM.cost, amed));
-    render(AM,SM,P.rows,P.ignored,P.header,P.rateCard,amed);
+    const sysRows=sysRowsForBudget(AM.cost, amed);
+    const SM=metrics(sysRows);
+    render(AM,SM,P.rows,P.ignored,P.header,P.rateCard,amed,sysRows);
   };
   document.getElementById('cmpSample').onclick=()=>{inp.value='146, 3200000\n472\n2호선, 5500000\n7호선\n간선420, 2800000\n360';document.getElementById('cmpRun').click();};
   document.getElementById('cmpClear').onclick=()=>{inp.value='';document.getElementById('cmpResult').innerHTML='';};
